@@ -40,7 +40,7 @@ export default function Login() {
         <Button type="submit" className={styles.button}>
           Entrar
         </Button>
-        <Link to="/forto-password" className={styles.link}>
+        <Link to="/forgot-password" className={styles.link}>
           Esqueci minha senha
         </Link>
       </form>

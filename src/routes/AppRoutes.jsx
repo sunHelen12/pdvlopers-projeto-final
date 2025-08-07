@@ -1,15 +1,15 @@
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Home } from "../pages/Home";
-import { Clients } from "../pages/Clients";
-import { Finances } from "../pages/Finances";
-import { Login } from "../pages/Login";
+// import { Clients } from "../pages/Clients";
+// import { Finances } from "../pages/Finances";
+import Login  from "../pages/Login";
 import ResetPassword  from "../pages/ResetPassword";
 import PrivateRoute from "../components/PrivateRoute";
 import ForgotPassword from "../pages/ForgotPassword";
-import Dashboard from "../pages/Dashboard";
-import { Messages } from "../pages/Messages";
-import { Rewards } from "../pages/Rewards";
-import { Signup } from "../pages/Signup";
+// import Dashboard from "../pages/Dashboard";
+// import { Messages } from "../pages/Messages";
+// import { Rewards } from "../pages/Rewards";
+// import { Signup } from "../pages/Signup";
 
 export default function AppRoutes(){ 
     return(
