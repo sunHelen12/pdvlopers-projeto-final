@@ -2,17 +2,17 @@ import styles from "./finances.module.css";
 
 import { Button } from "../../components/Finance/Button";
 import { TransactionCard } from "../../components/Finance/TransactionCard";
-import { Division } from "../../components/Finance/Division";
+import { Tabs } from "../../components/Finance/Tabs";
+import { FinancesHeader } from "../../components/Finance/FinancesHeader";
+import { TransactionItem } from "../../components/Finance/TransactionItem";
 
 export function Finances() {
     return (
         <div className={styles.container}>
             <div className={styles.header}>
-                <div>
-                    <h1>Financeiro</h1>
-                    <p>Controle suas finanças e fluxo de caixa</p>
-                </div>
-                <Button icon="+" text="Nova Transação" onClick={() => console.log('Abrir modal')} />
+                <FinancesHeader>
+                    <Button />
+                </FinancesHeader>
             </div>
 
             <div className={styles.cards}>
@@ -23,7 +23,41 @@ export function Finances() {
             </div>
 
             <div className={styles.division}>
-                <Division />
+                <Tabs />
+            </div>
+
+            <div>
+                <TransactionItem
+                    title="Venda #001"
+                    category='vendas'
+                    date='12/08/2025'
+                    amount={150}
+                />
+                <TransactionItem
+                    title="Compra de Estoque"
+                    category='estoque'
+                    date='12/08/2025'
+                    amount={-500}
+                />
+                <TransactionItem
+                    title="Venda #002"
+                    category='vendas'
+                    date='12/08/2025'
+                    amount={150}
+                />
+                <TransactionItem
+                    title="Aluguel"
+                    category='Despesas'
+                    date='12/08/2025'
+                    amount={150}
+                />
+                <TransactionItem
+                    title={`Venda #001`}
+                    category='vendas'
+                    date='12/08/2025'
+                    amount={-1200}
+                />
+
             </div>
         </div>
     );

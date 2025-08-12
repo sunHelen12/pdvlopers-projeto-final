@@ -1,0 +1,58 @@
+/* TransactionItem.module.css */
+.item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px;
+    border-bottom: 1px solid #eee;
+}
+
+.iconWrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: #f0fdf4;
+    /* verde claro para entrada, ajustaremos via classe */
+}
+
+.iconIncome {
+    color: #16a34a;
+}
+
+.iconExpense {
+    color: #dc2626;
+}
+
+.details {
+    flex: 1;
+    margin-left: 12px;
+}
+
+.title {
+    font-weight: 500;
+    display: block;
+}
+
+.meta {
+    font-size: 12px;
+    color: #6b7280;
+    display: flex;
+    gap: 8px;
+}
+
+.category {
+    font-weight: 500;
+}
+
+.amountIncome {
+    color: #16a34a;
+    font-weight: 600;
+}
+
+.amountExpense {
+    color: #dc2626;
+    font-weight: 600;
+}
