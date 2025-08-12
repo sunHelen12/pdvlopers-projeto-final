@@ -1,6 +1,19 @@
-.finances{
-    display:flex;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+.container {
+  padding: 2rem;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.cards {
+  margin-top: 24px;
+  display: flex;
+  gap: 20px;
+}
+
+.division {
+  margin-top: 8rem;
 }
