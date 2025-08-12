@@ -1,10 +1,11 @@
-/* TransactionItem.module.css */
 .item {
     display: flex;
     align-items: center;
     justify-content: space-between;
     padding: 12px;
-    border-bottom: 1px solid #eee;
+    border: 1px solid #eee;
+    border-radius: 8px;
+    margin-bottom: 0.8rem;
 }
 
 .iconWrapper {
@@ -14,8 +15,18 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
+    /* background-color padrão pode ficar aqui, mas será sobrescrito */
     background-color: #f0fdf4;
-    /* verde claro para entrada, ajustaremos via classe */
+}
+
+.incomeBg {
+    background-color: #dcfce7;
+    /* verde claro */
+}
+
+.expenseBg {
+    background-color: #fee2e2;
+    /* vermelho claro */
 }
 
 .iconIncome {

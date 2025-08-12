@@ -6,7 +6,7 @@ export function TransactionItem({ title, category, date, amount }) {
 
     return (
         <div className={styles.item}>
-            <div className={styles.iconWrapper}>
+            <div className={`${styles.iconWrapper} ${isPositive ? styles.incomeBg : styles.expenseBg}`}>
                 {isPositive ? (
                     <FaArrowTrendUp className={styles.iconIncome} size={18} />
                 ) : (

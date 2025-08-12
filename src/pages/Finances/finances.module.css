@@ -8,12 +8,13 @@
   align-items: center;
 }
 
+
 .cards {
   margin-top: 24px;
   display: flex;
   gap: 20px;
 }
 
-.division {
-  margin-top: 4rem;
+.tabs {
+  margin-top: 2rem;
 }

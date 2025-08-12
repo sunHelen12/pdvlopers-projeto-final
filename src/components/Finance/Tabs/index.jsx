@@ -1,5 +1,8 @@
 import { useState } from "react";
 import styles from "./Tabs.module.css";
+import { TransactionItem } from "../TransactionItem";
+import { TransactionList } from "../TransactionList";
+import { Header } from "../Header";
 
 export function Tabs() {
     const [tabAtiva, setTabAtiva] = useState("transacoes");
@@ -31,15 +34,40 @@ export function Tabs() {
 
             <div className={styles.tabContent}>
                 {tabAtiva === "transacoes" && (
-                    <div>
-                        <h2>Lista de Transações</h2>
-                        {/* Aqui entra seu componente/lista */}
+                    <div className={styles.containerLastTransactions}>
+                        <Header title="Últimas Transações" subtitle="Histórico de entradas e saídas" size="small" />
+                        <div className={styles.transactionItem}>
+                            <TransactionItem
+                                title="Venda #001"
+                                category='vendas'
+                                date='12/08/2025'
+                                amount={150}
+                            />
+                            <TransactionItem
+                                title="Compra de Estoque"
+                                category='estoque'
+                                date='12/08/2025'
+                                amount={-500}
+                            />
+                            <TransactionItem
+                                title="Venda #002"
+                                category='vendas'
+                                date='12/08/2025'
+                                amount={150}
+                            />
+                            <TransactionItem
+                                title="Aluguel"
+                                category='Despesas'
+                                date='12/08/2025'
+                                amount={-1200}
+                            />
+
+                        </div>
                     </div>
                 )}
                 {tabAtiva === "graficos" && (
                     <div>
-                        <h2>Gráficos</h2>
-                        {/* Aqui entra seu componente de gráficos */}
+                        <TransactionList />
                     </div>
                 )}
             </div>
