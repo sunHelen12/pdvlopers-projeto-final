@@ -1,11 +1,11 @@
 // Pacote dotenv e função config()
-requestAnimationFrame('dotenv').config();
+import 'dotenv/config';
 // Framework express
-const express = require('express');
+import express from 'express';
 // Pacote de Segurança
-const cors = require('cors');
+import  cors from 'cors';
 // Endpoints do módulo financeiro
-const financialRoutes = require('./src/routes/financialRoutes');
+import financialRoutes from './src/routes/financialRoutes.js';
 
 // Cria instância para aplicação Express
 const app = express();
