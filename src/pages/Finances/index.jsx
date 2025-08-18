@@ -21,6 +21,18 @@ export function Finances() {
     const [transactions, setTransactions] = useState([]);
     const [showModal, setShowModal] = useState(false);
 
+    const totalEntradas = transactions
+        .filter((t) => t.type === "entrada")
+        .reduce((acc, t) => acc + t.amount, 0);
+
+    const totalSaidas = transactions
+        .filter((t) => t.type === "saida")
+        .reduce((acc, t) => acc + t.amount, 0);
+
+    const saldo = totalEntradas - totalSaidas;
+
+    const totalTransacoes = transactions.length;
+
     const buttons = [
         { id: 'transacoes', label: "Transações" },
         { id: 'graficos', label: "Gráficos" },
@@ -37,7 +49,7 @@ export function Finances() {
                         <TransactionItem key={t.id} {...t} />
                     ))
                 ) : (
-                    <p>Nenhuma transação cadastrada ainda</p>
+                    <p>Nenhuma transação cadastrada</p>
                 )}
             </TabContent>
         ),
@@ -70,34 +82,33 @@ export function Finances() {
                         />
                     )}
                 </div>
-
             </div>
 
             <div className={styles.cards}>
                 <TransactionCard
                     title="Total Entradas"
-                    amount="R$ 239,90"
+                    amount={`R$ ${totalEntradas.toFixed(2)}`}
                     subtitle="Este mês"
                     icon={<FaArrowTrendUp />}
                     color="green"
                 />
                 <TransactionCard
                     title="Total Saídas"
-                    amount="R$ 1.700,00"
+                    amount={`R$ ${totalSaidas.toFixed(2)}`}
                     subtitle="Este mês"
                     icon={<FaArrowTrendDown />}
                     color="red"
                 />
                 <TransactionCard
                     title="Saldo"
-                    amount="R$ -1.460,10"
+                    amount={`R$ ${saldo.toFixed(2)}`}
                     subtitle="Saldo atual"
                     icon={<MdOutlineAttachMoney />}
-                    color="red"
+                    color={saldo >= 0 ? "green" : "red"}
                 />
                 <TransactionCard
                     title="Transações"
-                    amount="4"
+                    amount={totalTransacoes}
                     subtitle="Este mês"
                     icon={<CiCalendar />}
                     color="black"

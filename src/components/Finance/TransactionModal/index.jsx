@@ -18,7 +18,7 @@ export function TransactionModal({ onSave, onClose }) {
         const newTransaction = {
             id: Date.now(),
             ...formData,
-            amount: formData.type === "entrada" ? amountValue : -amountValue, // saída fica negativa
+            amount: amountValue, // sempre positivo
         };
 
         onSave(newTransaction);
