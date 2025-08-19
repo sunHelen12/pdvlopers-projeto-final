@@ -11,12 +11,10 @@ router.post("/forgot-password", auth.forgotPassword);
 router.post("/refresh", auth.refreshToken);
 
 // 2FA
-router.get("/2fa/generate", twoFA.generate2FA);
-router.post("/2fa/verify", twoFA.verify2FA);
+router.get("/2fa/generate", authMiddleware, twoFA.generate2FA);
+router.post("/2fa/verify", authMiddleware, twoFA.verify2FA);
 
-// Rota protegida exemplo
-router.get("/me", authMiddleware, (req, res) => {
-  res.json({ user: req.user });
-});
+// Rotas protegidas
+router.get("/me", authMiddleware, auth.getMe);
 
 module.exports = router;
