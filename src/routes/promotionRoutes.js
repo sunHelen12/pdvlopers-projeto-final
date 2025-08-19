@@ -1,179 +1,253 @@
-const express = require("express")
-const router = express.Router()
+// routes/promotionRoutes.js
+const express = require("express");
+const router = express.Router();
 
-// Listar promoções
-router.get("/", (req, res) => {
-  res.json({ promotions: mockPromotions })
-})
+const supabase = require("../config/database"); 
+const { sendEmail } = require("../utils/email");
 
-// Buscar promoção por ID
-router.get("/:id", (req, res) => {
-  const promo = mockPromotions.find(p => p.id === req.params.id)
-  if (!promo) return res.status(404).json({ error: "Promoção não encontrada" })
-  res.json({ promotion: promo })
-})
+// --- Helpers ---
+const parseBool = (v) => (typeof v === "boolean" ? v : v === "true");
+const isISODate = (v) => !v || !isNaN(Date.parse(v));
 
-// Criar promoção
-router.post("/", async (req, res) => {
-  try {
-    const { title, description } = req.body
-    const newPromo = {
-      id: (mockPromotions.length + 1).toString(),
-      title,
-      description,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-    mockPromotions.push(newPromo)
-    // Envio de e-mail mock já existente
-    const emailPromises = mockClients.map(client => sendEmail({
-      to: client.email,
-      subject: `Nova promoção: ${title}`,
-      text: description,
-      html: `<h2>${title}</h2><p>${description}</p>`
-    }))
-    await Promise.allSettled(emailPromises)
-    res.status(201).json({ promotion: newPromo, message: `Promoção mock criada e e-mails enviados para ${mockClients.length} clientes de teste.` })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
+const ok = (res, data) => res.json(data);
+const created = (res, data) => res.status(201).json(data);
+const notFound = (res, msg = "Promoção não encontrada") =>
+  res.status(404).json({ error: msg });
+const badReq = (res, msg) => res.status(400).json({ error: msg });
+const fail = (res, err) =>
+  res.status(500).json({ error: err?.message || "Erro interno" });
 
-// Atualizar promoção
-router.put("/:id", (req, res) => {
-  const idx = mockPromotions.findIndex(p => p.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ error: "Promoção não encontrada" })
-  const { title, description } = req.body
-  mockPromotions[idx] = {
-    ...mockPromotions[idx],
-    title: title ?? mockPromotions[idx].title,
-    description: description ?? mockPromotions[idx].description,
-    updated_at: new Date().toISOString()
-  }
-  res.json({ promotion: mockPromotions[idx] })
-})
-
-// Deletar promoção
-router.delete("/:id", (req, res) => {
-  const idx = mockPromotions.findIndex(p => p.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ error: "Promoção não encontrada" })
-  const removed = mockPromotions.splice(idx, 1)
-  res.json({ message: "Promoção removida", promotion: removed[0] })
-})
-
-// --- INTEGRAÇÃO INICIAL COM BANCO (Supabase) ---
-const supabase = require("../config/database")
-
-// Exemplo de como ficaria o CRUD usando Supabase (apenas estrutura, sem lógica completa)
-// Descomente e adapte quando o banco estiver pronto
-/*
-// Listar promoções do banco
-router.get("/db", async (req, res) => {
-  const { data, error } = await supabase.from("promotions").select("*")
-  if (error) return res.status(500).json({ error: error.message })
-  res.json({ promotions: data })
-})
-
-// Criar promoção no banco
-router.post("/db", async (req, res) => {
-  const { title, description } = req.body
-  const { data, error } = await supabase.from("promotions").insert([
-    { title, description }
-  ]).select().single()
-  if (error) return res.status(500).json({ error: error.message })
-  res.status(201).json({ promotion: data })
-})
-*/
-
-
-const { sendEmail } = require("../utils/email")
-
-// MOCK: lista de clientes para teste
-const mockClients = [
-  { name: "Teste 1", email: "jjacques.amann@gmail.com" }
-]
-
-// MOCK: lista de promoções em memória
-let mockPromotions = [
-  {
-    id: "1",
-    title: "Promoção Teste",
-    description: "Você ganhou um desconto!",
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString()
-  }
-]
-
-// Listar promoções
-router.get("/", (req, res) => {
-  res.json({ promotions: mockPromotions })
-})
-
-// Buscar promoção por ID
-router.get("/:id", (req, res) => {
-  const promo = mockPromotions.find(p => p.id === req.params.id)
-  if (!promo) return res.status(404).json({ error: "Promoção não encontrada" })
-  res.json({ promotion: promo })
-})
-
-// Criar promoção
-router.post("/", async (req, res) => {
-  try {
-    const { title, description } = req.body
-    const newPromo = {
-      id: (mockPromotions.length + 1).toString(),
-      title,
-      description,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-    mockPromotions.push(newPromo)
-    // Envio de e-mail mock já existente
-    const emailPromises = mockClients.map(client => sendEmail({
-      to: client.email,
-      subject: `Nova promoção: ${title}`,
-      text: description,
-      html: `<h2>${title}</h2><p>${description}</p>`
-    }))
-    await Promise.allSettled(emailPromises)
-    res.status(201).json({ promotion: newPromo, message: `Promoção mock criada e e-mails enviados para ${mockClients.length} clientes de teste.` })
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-// Atualizar promoção
-router.put("/:id", (req, res) => {
-  const idx = mockPromotions.findIndex(p => p.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ error: "Promoção não encontrada" })
-  const { title, description } = req.body
-  mockPromotions[idx] = {
-    ...mockPromotions[idx],
-    title: title ?? mockPromotions[idx].title,
-    description: description ?? mockPromotions[idx].description,
-    updated_at: new Date().toISOString()
-  }
-  res.json({ promotion: mockPromotions[idx] })
-})
-
-// Deletar promoção
-router.delete("/:id", (req, res) => {
-  const idx = mockPromotions.findIndex(p => p.id === req.params.id)
-  if (idx === -1) return res.status(404).json({ error: "Promoção não encontrada" })
-  const removed = mockPromotions.splice(idx, 1)
-  res.json({ message: "Promoção removida", promotion: removed[0] })
-})
-
+// --- ROTAS LITERAIS PRIMEIRO (evitam colisão com /:id) ---
 router.post("/send-email", (req, res) => {
-  res.json({ message: "Enviar email promocional - implementar (João Jacques)" })
-})
+  return ok(res, { message: "Enviar email promocional - implementar (João Jacques)" });
+});
 
-router.post("/send-whatsapp", (req, res) => {
-  res.json({ message: "Enviar WhatsApp - implementar (João Jacques)" })
-})
+// router.post("/send-whatsapp", (req, res) => {
+//   return ok(res, { message: "Enviar WhatsApp - implementar (João Jacques)" });
+// });
 
 router.get("/segments", (req, res) => {
-  res.json({ message: "Listar segmentos de clientes - implementar (João Jacques)" })
-})
+  return ok(res, { message: "Listar segmentos de clientes - implementar (João Jacques)" });
+});
 
-module.exports = router
+// --- CRUD BASEADO EM BANCO (canônico) ---
+
+/**
+ * GET /promotions
+ * Query params:
+ *  - limit: number (default 20, max 100)
+ *  - offset: number (default 0)
+ *  - order: "created_at" | "updated_at" (default "created_at")
+ *  - dir: "asc" | "desc" (default "desc")
+ */
+router.get("/", async (req, res) => {
+  try {
+    const limit = Math.min(parseInt(req.query.limit ?? "20", 10), 100);
+    const offset = Math.max(parseInt(req.query.offset ?? "0", 10), 0);
+    const orderBy = ["created_at", "updated_at"].includes(req.query.order)
+      ? req.query.order
+      : "created_at";
+    const dir = req.query.dir === "asc" ? true : false; // ascending
+
+    let query = supabase
+      .from("promotions")
+      .select("*", { count: "exact" })
+      .order(orderBy, { ascending: dir });
+
+    if (offset > 0) query = query.range(offset, offset + limit - 1);
+    else query = query.limit(limit);
+
+    const { data, error, count } = await query;
+    if (error) return fail(res, error);
+
+    return ok(res, { items: data, meta: { limit, offset, count } });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+/**
+ * GET /promotions/:id
+ */
+router.get("/:id", async (req, res) => {
+  try {
+    const id = req.params.id; // se for integer no banco, supabase faz cast
+    const { data, error } = await supabase
+      .from("promotions")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (error) return notFound(res);
+    return ok(res, { item: data });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+/**
+ * POST /promotions
+ * Body:
+ *  - title (string, required)
+ *  - description (string, required)
+ *  - type (string, optional - ex: "PERCENT", "VALUE", "BOGO")
+ *  - conditions (json/text, optional)
+ *  - active (boolean, default true)
+ *  - start_date (ISO string, optional)
+ *  - end_date (ISO string, optional)
+ */
+router.post("/", async (req, res) => {
+  try {
+    let {
+      title,
+      description,
+      type,
+      conditions,
+      active = true,
+      start_date,
+      end_date,
+    } = req.body || {};
+
+    // validações mínimas
+    if (!title || !description) return badReq(res, "title e description são obrigatórios");
+    if (!isISODate(start_date) || !isISODate(end_date))
+      return badReq(res, "Datas devem ser ISO válidas (YYYY-MM-DD ou ISO 8601)");
+    if (start_date && end_date && new Date(start_date) > new Date(end_date))
+      return badReq(res, "start_date não pode ser maior que end_date");
+
+    active = parseBool(active);
+
+    const payload = { title, description, type, conditions, active, start_date, end_date };
+
+    // cria a promoção
+    const { data: promo, error: promoErr } = await supabase
+      .from("promotions")
+      .insert([payload])
+      .select()
+      .single();
+
+    if (promoErr) return fail(res, promoErr);
+
+    // envia e-mails de teste (opcional por ENV)
+    if (process.env.SEND_TEST_EMAILS === "true") {
+      const { data: users, error: usersErr } = await supabase
+        .from("users")
+        .select("email");
+
+      if (usersErr) {
+        // Não falha a requisição, mas loga
+        console.error("[usersErr]", usersErr);
+      } else if (users?.length) {
+        const results = await Promise.allSettled(
+          users.map((u) =>
+            sendEmail({
+              to: u.email,
+              subject: `Nova promoção: ${title}`,
+              text: description,
+              html: `<h2>${title}</h2><p>${description}</p>`,
+            })
+          )
+        );
+        console.log("[EMAIL_TEST_RESULTS]", JSON.stringify(results, null, 2));
+      }
+    }
+
+    return created(res, { item: promo });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+/**
+ * PUT /promotions/:id
+ * Atualiza campos parciais
+ */
+router.put("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    let {
+      title,
+      description,
+      type,
+      conditions,
+      active,
+      start_date,
+      end_date,
+    } = req.body || {};
+
+    if (start_date && !isISODate(start_date)) return badReq(res, "start_date inválida");
+    if (end_date && !isISODate(end_date)) return badReq(res, "end_date inválida");
+    if (start_date && end_date && new Date(start_date) > new Date(end_date))
+      return badReq(res, "start_date não pode ser maior que end_date");
+
+    const patch = {};
+    if (title !== undefined) patch.title = title;
+    if (description !== undefined) patch.description = description;
+    if (type !== undefined) patch.type = type;
+    if (conditions !== undefined) patch.conditions = conditions;
+    if (active !== undefined) patch.active = parseBool(active);
+    if (start_date !== undefined) patch.start_date = start_date;
+    if (end_date !== undefined) patch.end_date = end_date;
+    patch.updated_at = new Date().toISOString();
+
+    const { data, error } = await supabase
+      .from("promotions")
+      .update(patch)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !data) return notFound(res);
+    return ok(res, { item: data });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+/**
+ * DELETE /promotions/:id
+ */
+router.delete("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const { data, error } = await supabase
+      .from("promotions")
+      .delete()
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error || !data) return notFound(res);
+    return ok(res, { message: "Promoção removida", item: data });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+// --- (Opcional) Endpoints de MOCK, atrás de um prefixo claro ---
+// Para usar, defina um array fora daqui: const mockPromotions = [...];
+// E ative por ENV: USE_PROMO_MOCK === "true"
+if (process.env.USE_PROMO_MOCK === "true") {
+  const mockPromotions = []; // substitua pelo seu mock real
+
+  router.get("/mock", (req, res) => ok(res, { items: mockPromotions }));
+  router.get("/mock/:id", (req, res) => {
+    const item = mockPromotions.find((p) => String(p.id) === String(req.params.id));
+    return item ? ok(res, { item }) : notFound(res);
+  });
+  router.post("/mock", async (req, res) => {
+    const { title, description } = req.body || {};
+    if (!title || !description) return badReq(res, "title e description são obrigatórios");
+    const newPromo = {
+      id: (mockPromotions.length + 1).toString(),
+      title,
+      description,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+    mockPromotions.push(newPromo);
+    return created(res, { item: newPromo });
+  });
+}
+
+module.exports = router;
