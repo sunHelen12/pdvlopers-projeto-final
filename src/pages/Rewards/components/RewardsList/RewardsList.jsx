@@ -1,5 +1,6 @@
 ﻿import styles from './RewardsList.module.css';
 import { Gift } from 'lucide-react';
+import { useNavigate } from "react-router-dom";
 
 export const RewardsList = () => {
   const rewardsList = [
@@ -9,12 +10,15 @@ export const RewardsList = () => {
     { id: 4, name: "Brinde Especial", points: 1000, available: false },
   ];
 
+  const navigate = useNavigate();
+
   return (
     <div className={styles.container}>
       <div className={styles.header}>
         <h3 className={styles.title}>Recompensas Disponíveis</h3>
 
-        <div className={styles.newRewardButton}>
+        {/* Botão */}
+        <div className={styles.newRewardButton} onClick={() => navigate("new-reward")}>
           <Gift className={styles.icon} />
           <button className={styles.button}>
             Nova Recompensa
@@ -22,6 +26,7 @@ export const RewardsList = () => {
         </div>
       </div>
       
+      {/* Cada Card */}
       <div className={styles.grid}>
         {rewardsList.map((reward) => (
           <div 

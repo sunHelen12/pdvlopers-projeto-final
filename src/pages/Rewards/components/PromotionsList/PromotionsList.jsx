@@ -25,9 +25,9 @@ export const PromotionsList = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h3 className={styles.title}>Promoções Ativas</h3>
-        <div className={styles.newPromotionButton}>
+        <div className={styles.newPromotionButton} onClick={() => navigate("new-promotion")}> 
           <Trophy className={styles.icon} />
-          <button className={styles.button} onClick={() => navigate("new-promotion")}>
+          <button className={styles.button}>
             Nova Promoção 
           </button>
         </div>

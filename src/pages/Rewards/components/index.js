@@ -2,4 +2,5 @@
 export * from './PromotionForm/PromotionForm';
 export * from './RedemptionHistory/RedemptionHistory'; 
 export * from './PointsOverview/PointsOverview';    
-export * from './RewardsList/RewardsList';      
+export * from './RewardsList/RewardsList';  
+export * from './RewardForm/RewardForm';   
