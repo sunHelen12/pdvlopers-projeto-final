@@ -22,16 +22,23 @@ export function Finances() {
     const [showModal, setShowModal] = useState(false);
 
     const totalEntradas = transactions
-        .filter((t) => t.type === "entrada")
+        .filter(t => t.type === "entrada")
         .reduce((acc, t) => acc + t.amount, 0);
 
     const totalSaidas = transactions
-        .filter((t) => t.type === "saida")
-        .reduce((acc, t) => acc + t.amount, 0);
+        .filter(t => t.type === "saida")
+        .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
-    const saldo = totalEntradas - totalSaidas;
+    const saldo = transactions.reduce((acc, t) => acc + t.amount, 0);
 
     const totalTransacoes = transactions.length;
+
+    const formatCurrency = (value) =>
+        new Intl.NumberFormat("pt-BR", {
+            style: "currency",
+            currency: "BRL",
+        }).format(value);
+
 
     const buttons = [
         { id: 'transacoes', label: "Transações" },
@@ -87,21 +94,21 @@ export function Finances() {
             <div className={styles.cards}>
                 <TransactionCard
                     title="Total Entradas"
-                    amount={`R$ ${totalEntradas.toFixed(2)}`}
+                    amount={formatCurrency(totalEntradas)}
                     subtitle="Este mês"
                     icon={<FaArrowTrendUp />}
                     color="green"
                 />
                 <TransactionCard
                     title="Total Saídas"
-                    amount={`R$ ${totalSaidas.toFixed(2)}`}
+                    amount={formatCurrency(totalSaidas)}
                     subtitle="Este mês"
                     icon={<FaArrowTrendDown />}
                     color="red"
                 />
                 <TransactionCard
                     title="Saldo"
-                    amount={`R$ ${saldo.toFixed(2)}`}
+                    amount={formatCurrency(saldo)}
                     subtitle="Saldo atual"
                     icon={<MdOutlineAttachMoney />}
                     color={saldo >= 0 ? "green" : "red"}
@@ -113,6 +120,7 @@ export function Finances() {
                     icon={<CiCalendar />}
                     color="black"
                 />
+
             </div>
 
             <div className={styles.tabs}>

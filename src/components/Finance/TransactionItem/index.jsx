@@ -1,4 +1,6 @@
 import styles from './TransactionItem.module.css'
+
+//icones
 import { FaArrowTrendUp, FaArrowTrendDown } from "react-icons/fa6";
 
 export function TransactionItem({ title, category, date, amount }) {

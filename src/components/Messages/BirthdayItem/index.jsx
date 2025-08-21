@@ -1,7 +1,9 @@
 import styles from './BirthdayItem.module.css'
 
+//icones
 import { MdOutlineEmail } from "react-icons/md";
 import { FiMessageCircle } from "react-icons/fi";
+
 
 export function BirthdayItem({ icon, name, date, phoneNumber, email }) {
     const formattedDate = date instanceof Date

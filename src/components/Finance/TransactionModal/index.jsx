@@ -18,12 +18,15 @@ export function TransactionModal({ onSave, onClose }) {
         const newTransaction = {
             id: Date.now(),
             ...formData,
-            amount: amountValue, // sempre positivo
+            // Se for saída, deixa negativo
+            amount: formData.type === "saida" ? -Math.abs(amountValue) : Math.abs(amountValue),
         };
 
+        console.log("Nova transação:", newTransaction); // para verificar
         onSave(newTransaction);
         onClose();
     };
+
 
     return (
         <div className={styles.overlay}>
@@ -82,7 +85,7 @@ export function TransactionModal({ onSave, onClose }) {
                             value={formData.category}
                             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                         >
-                            <option value="" disabled selected>Selecione a categoria</option>
+                            <option value="" disabled>Selecione a categoria</option>
                             <option value="Vendas">Vendas</option>
                             <option value="Estoque">Estoque</option>
                             <option value="Despesas">Despesas</option>
