@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
+
 import {
 	LayoutDashboard,
 	Users,
@@ -25,7 +27,7 @@ const mockUser = {
 };
 
 export function Sidebar() {
-	const [activeUrl, setActiveUrl] = useState("/");
+	const location = useLocation();
 	const [user] = useState(mockUser);
 
 	const handleLogout = () => {
@@ -50,18 +52,16 @@ export function Sidebar() {
 				<p className={styles.menuGroupLabel}>Menu Principal</p>
 				{menuItems.map((item) => {
 					const Icon = item.icon;
-					const isActive = activeUrl === item.url;
+					const isActive = location.pathname === item.url;
 					return (
 						<div key={item.title} className={styles.menuItem}>
-							<button
-								className={`${styles.menuLink} ${
-									isActive ? styles.menuLinkActive : ""
-								}`}
-								onClick={() => setActiveUrl(item.url)}
+							<Link
+								to={item.url}
+								className={`${styles.menuLink} ${isActive ? styles.menuLinkActive : ""}`}
 							>
 								<Icon />
 								<span>{item.title}</span>
-							</button>
+							</Link>
 						</div>
 					);
 				})}

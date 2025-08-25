@@ -2,6 +2,8 @@ import styles from "./finances.module.css";
 
 import { useState } from "react";
 
+import { Layout } from "../../components/Layout/Layout";
+
 import { Button } from "../../components/Finance/Button";
 import { TransactionCard } from "../../components/Finance/TransactionCard";
 import { Tabs } from "../../components/Finance/Tabs";
@@ -71,61 +73,63 @@ export function Finances() {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <Header
-                    title="Financeiro"
-                    subtitle="Controle suas finanças e fluxo de caixa"
-                />
-                <div>
-                    <Button icon={<FaPlus />} text="Nova Transação" onClick={() => setShowModal(true)} />
+        <Layout>
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <Header
+                        title="Financeiro"
+                        subtitle="Controle suas finanças e fluxo de caixa"
+                    />
+                    <div>
+                        <Button icon={<FaPlus />} text="Nova Transação" onClick={() => setShowModal(true)} />
 
-                    {showModal && (
-                        <TransactionModal
-                            onSave={(newTransaction) =>
-                                setTransactions((prev) => [...prev, newTransaction])
-                            }
-                            onClose={() => setShowModal(false)}
-                        />
-                    )}
+                        {showModal && (
+                            <TransactionModal
+                                onSave={(newTransaction) =>
+                                    setTransactions((prev) => [...prev, newTransaction])
+                                }
+                                onClose={() => setShowModal(false)}
+                            />
+                        )}
+                    </div>
+                </div>
+
+                <div className={styles.cards}>
+                    <TransactionCard
+                        title="Total Entradas"
+                        amount={formatCurrency(totalEntradas)}
+                        subtitle="Este mês"
+                        icon={<FaArrowTrendUp />}
+                        color="green"
+                    />
+                    <TransactionCard
+                        title="Total Saídas"
+                        amount={formatCurrency(totalSaidas)}
+                        subtitle="Este mês"
+                        icon={<FaArrowTrendDown />}
+                        color="red"
+                    />
+                    <TransactionCard
+                        title="Saldo"
+                        amount={formatCurrency(saldo)}
+                        subtitle="Saldo atual"
+                        icon={<MdOutlineAttachMoney />}
+                        color={saldo >= 0 ? "green" : "red"}
+                    />
+                    <TransactionCard
+                        title="Transações"
+                        amount={totalTransacoes}
+                        subtitle="Este mês"
+                        icon={<CiCalendar />}
+                        color="black"
+                    />
+
+                </div>
+
+                <div className={styles.tabs}>
+                    <Tabs buttons={buttons} contents={contents} />
                 </div>
             </div>
-
-            <div className={styles.cards}>
-                <TransactionCard
-                    title="Total Entradas"
-                    amount={formatCurrency(totalEntradas)}
-                    subtitle="Este mês"
-                    icon={<FaArrowTrendUp />}
-                    color="green"
-                />
-                <TransactionCard
-                    title="Total Saídas"
-                    amount={formatCurrency(totalSaidas)}
-                    subtitle="Este mês"
-                    icon={<FaArrowTrendDown />}
-                    color="red"
-                />
-                <TransactionCard
-                    title="Saldo"
-                    amount={formatCurrency(saldo)}
-                    subtitle="Saldo atual"
-                    icon={<MdOutlineAttachMoney />}
-                    color={saldo >= 0 ? "green" : "red"}
-                />
-                <TransactionCard
-                    title="Transações"
-                    amount={totalTransacoes}
-                    subtitle="Este mês"
-                    icon={<CiCalendar />}
-                    color="black"
-                />
-
-            </div>
-
-            <div className={styles.tabs}>
-                <Tabs buttons={buttons} contents={contents} />
-            </div>
-        </div>
+        </Layout>
     );
 }

@@ -11,6 +11,7 @@ import { FiMessageCircle } from "react-icons/fi";
 import { MdOutlineEmail } from "react-icons/md";
 import { IoGiftOutline } from "react-icons/io5";
 import { MessageHistory } from "../../components/Messages/MessageHistory";
+import { Layout } from "../../components/Layout/Layout";
 
 
 export function Messages() {
@@ -57,18 +58,20 @@ export function Messages() {
     };
 
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <Header
-                    title="Mensagens"
-                    subtitle="Envie promoções e mensagens para seus clientes"
-                />
-            </div>
+        <Layout>
+            <div className={styles.container}>
+                <div className={styles.header}>
+                    <Header
+                        title="Mensagens"
+                        subtitle="Envie promoções e mensagens para seus clientes"
+                    />
+                </div>
 
-            <div className={styles.tabs}>
-                <Tabs buttons={buttons} contents={contents} />
-                <Tabs contents={contents.contents} />
+                <div className={styles.tabs}>
+                    <Tabs buttons={buttons} contents={contents} />
+                    <Tabs contents={contents.contents} />
+                </div>
             </div>
-        </div>
+        </Layout>
     );
 }
