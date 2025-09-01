@@ -25,14 +25,14 @@ export function Messages() {
         mensagens: (
             <div className={styles.cardsWrapper}>
                 <TabContent title="Envio por email" subtitle="Envie promoções e newsletters por email">
-                    <MessageContent icon={<MdOutlineEmail />} text="Crie campanhas de email personalizadas" >
-                        <SendMessages text="Criar Email" />
+                    <MessageContent icon={<MdOutlineEmail />} text="Crie campanhas de email personalizadas">
+                        <SendMessages text="Criar Email" type="Email" />
                     </MessageContent>
                 </TabContent>
 
                 <TabContent title="Envio por WhatsApp" subtitle="Envie mensagens diretas via WhatsApp">
-                    <MessageContent icon={<FiMessageCircle />} text="Envie mensagens instantâneas para seus clientes" >
-                        <SendMessages text="Criar Mensagem" />
+                    <MessageContent icon={<FiMessageCircle />} text="Envie mensagens instantâneas para seus clientes">
+                        <SendMessages text="Criar Mensagem" type="WhatsApp" />
                     </MessageContent>
                 </TabContent>
 

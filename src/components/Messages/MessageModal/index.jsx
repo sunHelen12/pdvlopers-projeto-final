@@ -1,77 +1,110 @@
 import { useState } from "react";
-import styles from './MessageModal.module.css'
-import { Header } from "../Header";
+import styles from "./MessageModal.module.css";
+import { Header } from "../../Finance/Header";
 
-export function MessageModal({ onSave, onClose }) {
-    const [formData, setFormData] = useState({
-        topic: "",
-        segment: "",
-        message: ""
-    });
+export function MessageModal({ type, isOpen, onClose }) {
+    const [segment, setSegment] = useState("");
+    const [subject, setSubject] = useState("");
+    const [message, setMessage] = useState("");
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    if (!isOpen) return null;
 
+    const handleSendMessage = () => {
+        const data = {
+            tipo: type,
+            segmento: segment,
+            assunto: subject,
+            mensagem: message,
+        };
 
-        onSave();
+        console.log("Enviando mensagem:", data);
+
+        // Depois de enviar, fechar o modal
         onClose();
-    };
 
+        // Opcional: limpar campos
+        setSegment("");
+        setSubject("");
+        setMessage("");
+    };
 
     return (
         <div className={styles.overlay}>
             <div className={styles.modal}>
                 <div className={styles.header}>
-                    <Header
-                        title="Enviar Email Promocional"
-                        subtitle="Configure sua campanha de email marketing"
-                        size="small"
-                    />
+                    {type === "Email" ? (
+                        <Header
+                            title="Enviar Email Promocional"
+                            subtitle="Configure sua campanha de email marketing."
+                            size="small"
+                        />
+                    ) : (
+                        <Header
+                            title="Enviar WhatsApp"
+                            subtitle="Configure sua mensagem para WhatsApp"
+                            size="small"
+                        />
+                    )}
                 </div>
 
-                <form onSubmit={handleSubmit} className={styles.form}>
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault(); // impede reload
+                        handleSendMessage();
+                    }}
+                    className={styles.form}
+                >
 
-                    {/* Assunto */}
-                    <div className={styles.field}>
-                        <label>Assunto</label>
-                        <input
-                            type="text"
-                            placeholder="Assunto do email"
-                            required
-                        />
-                    </div>
+                    {type === "Email" && (
+                        <div className={styles.field}>
+                            <label>Assunto</label>
+                            <input
+                                type="text"
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
+                                placeholder="Digite o assunto"
+                            />
+                        </div>
+                    )}
 
-                    {/* Segmento */}
                     <div className={styles.field}>
                         <label>Segmento</label>
-                        <select
-                            value={formData.category}
-                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                        >
-                            <option value="" disabled>Selecione o público</option>
-                            <option value="VIP">Clientes VIP</option>
-                            <option value="Gold">Clientes Gold</option>
-                            <option value="Silver">Clientes Silver</option>
-                            <option value="Inativos">Clientes Inativos</option>
+                        <select value={segment} onChange={(e) => setSegment(e.target.value)}>
+                            <option value="">Selecione um segmento</option>
+                            <option value="todos">Todos os clientes</option>
+                            <option value="vip">Clientes VIP</option>
+                            <option value="golds">Clientes Golds</option>
+                            <option value="silver">Clientes Silver</option>
+                            <option value="inativos">Clientes Inativos</option>
                         </select>
                     </div>
 
-                    {/* Mensagem */}
+
+
                     <div className={styles.field}>
                         <label>Mensagem</label>
                         <textarea
-                            name="message"
-                            id="message"
-                            rows={5}
-                            cols={33}
-                            placeholder="Digite sua mensagem...">
-                        </textarea>
+                            value={message}
+                            onChange={(e) => {
+                                if (e.target.value.length <= 160) {
+                                    setMessage(e.target.value);
+                                }
+                            }}
+                            placeholder="Escreva sua mensagem"
+                        />
+                        <div className={styles.textareaWarning}>
+                            <p>Máximo 160 caracteres</p>
+                            <p>{message.length}/160</p>
+                        </div>
                     </div>
 
-                    {/* Botões */}
                     <div className={styles.buttons}>
-                        <button type="button" className={styles.cancel} onClick={onClose}>Cancelar</button>
-                        <button type="submit" className={styles.save}>Registar</button>
+                        <button type="button" className={styles.cancel} onClick={onClose}>
+                            Cancelar
+                        </button>
+                        <button type="submit" className={styles.save}>
+                            Enviar
+                        </button>
                     </div>
                 </form>
             </div>
