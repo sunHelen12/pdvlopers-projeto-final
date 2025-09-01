@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from './TransactionModal.module.css'
 import { Header } from "../Header";
+import clientsData from '../../data/mockClients.json'
 
 export function TransactionModal({ onSave, onClose }) {
     const [formData, setFormData] = useState({
@@ -11,6 +12,10 @@ export function TransactionModal({ onSave, onClose }) {
         amount: ""
     });
 
+    const [somarPontos, setSomarPontos] = useState("não");
+    const [cpfCliente, setCpfCliente] = useState("");
+    const [selectedClient, setSelectedClient] = useState(null);
+
     const handleSubmit = (e) => {
         e.preventDefault();
 
@@ -18,8 +23,8 @@ export function TransactionModal({ onSave, onClose }) {
         const newTransaction = {
             id: Date.now(),
             ...formData,
-            // Se for saída, deixa negativo
             amount: formData.type === "saida" ? -Math.abs(amountValue) : Math.abs(amountValue),
+            cliente: somarPontos === "sim" ? selectedClient : null
         };
 
         console.log("Nova transação:", newTransaction); // para verificar
@@ -27,6 +32,10 @@ export function TransactionModal({ onSave, onClose }) {
         onClose();
     };
 
+    const handleBuscarCliente = () => {
+        const client = clientsData.find(c => c.cpf === cpfCliente);
+        setSelectedClient(client || null);
+    };
 
     return (
         <div className={styles.overlay}>
@@ -40,6 +49,54 @@ export function TransactionModal({ onSave, onClose }) {
                 </div>
 
                 <form onSubmit={handleSubmit} className={styles.form}>
+
+                    {/* Somar Pontos */}
+                    <div className={styles.field}>
+                        <label>Deseja somar pontos?</label>
+                        <div>
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="sim"
+                                    checked={somarPontos === "sim"}
+                                    onChange={(e) => setSomarPontos(e.target.value)}
+                                />
+                                Sim
+                            </label>
+                            <label>
+                                <input
+                                    type="radio"
+                                    value="não"
+                                    checked={somarPontos === "não"}
+                                    onChange={(e) => setSomarPontos(e.target.value)}
+                                />
+                                Não
+                            </label>
+                        </div>
+                    </div>
+
+                    {/* Buscar Cliente */}
+                    {somarPontos === "sim" && (
+                        <div className={styles.field}>
+                            <label>CPF do Cliente</label>
+                            <input
+                                type="text"
+                                placeholder="Digite o CPF"
+                                value={cpfCliente}
+                                onChange={(e) => setCpfCliente(e.target.value)}
+                            />
+                            <button type="button" onClick={handleBuscarCliente}>Buscar</button>
+
+                            {selectedClient && (
+                                <div style={{ marginTop: '0.5rem' }}>
+                                    <p>Nome: {selectedClient.nome}</p>
+                                    <p>Email: {selectedClient.email}</p>
+                                    <p>CPF: {selectedClient.cpf}</p>
+                                    <p>Telefone: {selectedClient.telefone}</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
 
                     {/* Tipo */}
                     <div className={styles.field}>
@@ -108,7 +165,7 @@ export function TransactionModal({ onSave, onClose }) {
                     {/* Botões */}
                     <div className={styles.buttons}>
                         <button type="button" className={styles.cancel} onClick={onClose}>Cancelar</button>
-                        <button type="submit" className={styles.save}>Registar</button>
+                        <button type="submit" className={styles.save}>Registrar</button>
                     </div>
                 </form>
             </div>
