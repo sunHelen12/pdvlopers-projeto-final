@@ -3,9 +3,9 @@ import 'dotenv/config';
 // Framework express
 import express from 'express';
 // Pacote de Segurança
-import  cors from 'cors';
+import cors from 'cors';
 // Endpoints do módulo financeiro
-import FinancialRoutes from './src/routes/financialRoutes.js';
+import financialRoutes from './src/routes/FinancialRoutes.js';
 
 // Cria instância para aplicação Express
 const app = express();
@@ -17,7 +17,7 @@ app.use(cors());
 app.use(express.json());
 
 // Conexão de rotas
-app.use('/api/finance', FinancialRoutes);
+app.use('/api/finance', financialRoutes);
 // Inicia servidor
 app.listen(PORT, () => {
     console.log(`API Financeira rodando na porta ${PORT}`);
