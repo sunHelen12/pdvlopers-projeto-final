@@ -45,6 +45,54 @@ select {
     font-size: 0.8rem;
 }
 
+/* Agrupa os radios e adiciona espaçamento */
+.radioGroup {
+    display: flex;
+    gap: 1.5rem;
+    /* espaço entre os radios */
+    margin-top: 0.5rem;
+}
+
+/* Espaçamento entre círculo e label */
+.radioLabel {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    /* distância entre o círculo e o texto */
+}
+
+/* Input e botão lado a lado */
+.cpfSearch {
+    display: flex;
+    gap: 0.5rem;
+    /* espaço entre input e botão */
+    margin-top: 0.5rem;
+}
+
+/* Informações do cliente com leve margem */
+.clientInfo {
+    margin-top: 0.5rem;
+    background-color: #f9f9f9;
+    padding: 0.5rem;
+    border-radius: 5px;
+    font-size: 0.9rem;
+}
+
+.buttonSearchClient {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 14px;
+}
+
 .buttons {
     display: flex;
     justify-content: flex-end;

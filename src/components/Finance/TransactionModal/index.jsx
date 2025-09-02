@@ -2,6 +2,7 @@ import { useState } from "react";
 import styles from './TransactionModal.module.css'
 import { Header } from "../Header";
 import clientsData from '../../data/mockClients.json'
+import { FaSearch } from "react-icons/fa";
 
 export function TransactionModal({ onSave, onClose }) {
     const [formData, setFormData] = useState({
@@ -33,7 +34,8 @@ export function TransactionModal({ onSave, onClose }) {
     };
 
     const handleBuscarCliente = () => {
-        const client = clientsData.find(c => c.cpf === cpfCliente);
+        const cpfFormatado = cpfCliente.replace(/\D/g, ""); // remove pontos e traço
+        const client = clientsData.find(c => c.cpf.replace(/\D/g, "") === cpfFormatado);
         setSelectedClient(client || null);
     };
 
@@ -53,8 +55,8 @@ export function TransactionModal({ onSave, onClose }) {
                     {/* Somar Pontos */}
                     <div className={styles.field}>
                         <label>Deseja somar pontos?</label>
-                        <div>
-                            <label>
+                        <div className={styles.radioGroup}>
+                            <label className={styles.radioLabel}>
                                 <input
                                     type="radio"
                                     value="sim"
@@ -63,7 +65,7 @@ export function TransactionModal({ onSave, onClose }) {
                                 />
                                 Sim
                             </label>
-                            <label>
+                            <label className={styles.radioLabel}>
                                 <input
                                     type="radio"
                                     value="não"
@@ -79,16 +81,18 @@ export function TransactionModal({ onSave, onClose }) {
                     {somarPontos === "sim" && (
                         <div className={styles.field}>
                             <label>CPF do Cliente</label>
-                            <input
-                                type="text"
-                                placeholder="Digite o CPF"
-                                value={cpfCliente}
-                                onChange={(e) => setCpfCliente(e.target.value)}
-                            />
-                            <button type="button" onClick={handleBuscarCliente}>Buscar</button>
+                            <div className={styles.cpfSearch}>
+                                <input
+                                    type="text"
+                                    placeholder="Digite o CPF"
+                                    value={cpfCliente}
+                                    onChange={(e) => setCpfCliente(e.target.value)}
+                                />
+                                <button className={styles.buttonSearchClient} type="button" onClick={handleBuscarCliente}><FaSearch /></button>
+                            </div>
 
                             {selectedClient && (
-                                <div style={{ marginTop: '0.5rem' }}>
+                                <div className={styles.clientInfo}>
                                     <p>Nome: {selectedClient.nome}</p>
                                     <p>Email: {selectedClient.email}</p>
                                     <p>CPF: {selectedClient.cpf}</p>
@@ -97,6 +101,7 @@ export function TransactionModal({ onSave, onClose }) {
                             )}
                         </div>
                     )}
+
 
                     {/* Tipo */}
                     <div className={styles.field}>
