@@ -21,6 +21,7 @@ export function Finances() {
 
     const [transactions, setTransactions] = useState([]);
     const [showModal, setShowModal] = useState(false);
+    const [periodo, setPeriodo] = useState(1);
 
     const totalEntradas = transactions
         .filter(t => t.type === "entrada")
@@ -64,9 +65,9 @@ export function Finances() {
         graficos: (
             <TabContent
                 title="Lucro vs Prejuízo"
-                subtitle="Comparativo mensal dos últimos 6 meses"
+                subtitle="Comparativo de transações dos últimos meses"
             >
-                <TransactionList />
+                <TransactionList periodo={periodo} setPeriodo={setPeriodo} />
             </TabContent>
         ),
     };
