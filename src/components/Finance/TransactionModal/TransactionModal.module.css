@@ -69,6 +69,23 @@ select {
     margin-top: 0.5rem;
 }
 
+.buttonAddClient {
+    margin-top: 0.4rem;
+    padding: 8px 12px;
+    background-color: #000;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+
+    width: 183px;
+}
+
+.buttonAddClient:hover {
+    background-color: #2a2a2aff;
+}
+
 /* Informações do cliente com leve margem */
 .clientInfo {
     margin-top: 0.5rem;

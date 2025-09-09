@@ -1,8 +1,9 @@
 import { useState } from "react";
 import styles from './TransactionModal.module.css'
 import { Header } from "../Header";
-import clientsData from '../../data/mockClients.json'
+import clientsData from '../../../data/mockClients.json'
 import { FaSearch } from "react-icons/fa";
+import { useNavigate } from 'react-router-dom'
 
 export function TransactionModal({ onSave, onClose }) {
     const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ export function TransactionModal({ onSave, onClose }) {
     const [somarPontos, setSomarPontos] = useState("não");
     const [cpfCliente, setCpfCliente] = useState("");
     const [selectedClient, setSelectedClient] = useState(null);
+    const navigate = useNavigate();
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -90,6 +92,15 @@ export function TransactionModal({ onSave, onClose }) {
                                 />
                                 <button className={styles.buttonSearchClient} type="button" onClick={handleBuscarCliente}><FaSearch /></button>
                             </div>
+
+                            {/* Botão para cadastrar cliente */}
+                            <button
+                                type="button"
+                                className={styles.buttonAddClient}
+                                onClick={() => navigate("/clients")}
+                            >
+                                Cadastrar Cliente
+                            </button>
 
                             {selectedClient && (
                                 <div className={styles.clientInfo}>

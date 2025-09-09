@@ -1,5 +1,7 @@
 import styles from "./messages.module.css";
 
+import clients from '../../data/mockClients.json'
+
 import { Tabs } from "../../components/Finance/Tabs";
 import { Header } from "../../components/Finance/Header";
 import { TabContent } from "../../components/Finance/TabContent";
@@ -20,6 +22,13 @@ export function Messages() {
         { id: 'historico', label: "Histórico" },
     ]
 
+    const currentMonth = new Date().getMonth(); // Janeiro = 0, Fevereiro = 1, ...
+
+    const aniversariantesDoMes = clients.filter(client => {
+        const birthDate = new Date(client.dataNascimento);
+        return birthDate.getMonth() === currentMonth;
+    });
+
     const contents = {
         mensagens: (
             <div className={styles.cardsWrapper}>
@@ -39,14 +48,24 @@ export function Messages() {
         ),
 
         aniversariantes: (
-            <TabContent title="Aniversariantes do Mês" subtitle="Clientes que fazem aniversário este mês">
+            < TabContent title="Aniversariantes do Mês" subtitle="Clientes que fazem aniversário este mês" >
                 <div className={styles.birthdayItens}>
-                    <BirthdayItem name="João Silva" date={new Date(1995, 7, 16)} phoneNumber="(11) 99999-9999" email="joao@gmail.com" />
-                    <BirthdayItem name="João Silva" date={new Date(1995, 7, 16)} phoneNumber="(11) 99999-9999" email="joao@gmail.com" />
-                    <BirthdayItem name="João Silva" date={new Date(1995, 7, 16)} phoneNumber="(11) 99999-9999" email="joao@gmail.com" />
-                    <BirthdayItem name="João Silva" date={new Date(1995, 7, 16)} phoneNumber="(11) 99999-9999" email="joao@gmail.com" />
+                    {aniversariantesDoMes.map(client => {
+                        const [year, month, day] = client.dataNascimento.split('-').map(Number);
+                        const birthDate = new Date(year, month - 1, day);
+
+                        return (
+                            <BirthdayItem
+                                key={client.id}
+                                name={client.nome}
+                                date={birthDate}
+                                phoneNumber={client.telefone}
+                                email={client.email}
+                            />
+                        )
+                    })}
                 </div>
-            </TabContent>
+            </TabContent >
         ),
 
         historico: (

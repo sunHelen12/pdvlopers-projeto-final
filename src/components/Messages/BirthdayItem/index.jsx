@@ -1,14 +1,22 @@
 import styles from './BirthdayItem.module.css'
 
-import { MdOutlineEmail } from "react-icons/md";
-import { FiMessageCircle } from "react-icons/fi";
 import { IoGiftOutline } from "react-icons/io5";
 
 
 export function BirthdayItem({ name, date, phoneNumber, email }) {
-    const formattedDate = date instanceof Date
-        ? date.toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" })
-        : date;
+    // Garantir que a data esteja no horário local
+    let localDate;
+    if (typeof date === 'string') {
+        const [year, month, day] = date.split('-').map(Number);
+        localDate = new Date(year, month - 1, day); // mês começa em 0
+    } else {
+        localDate = date;
+    }
+
+    const formattedDate = localDate.toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit"
+    });
 
     return (
         <div className={styles.list}>
@@ -29,13 +37,7 @@ export function BirthdayItem({ name, date, phoneNumber, email }) {
                         </div>
                     </div>
                 </div>
-
-                <div className={styles.containerButton}>
-                    <button className={styles.button}><FiMessageCircle /> WhatsApp</button>
-                </div>
             </div>
         </div>
-
-
     )
 }

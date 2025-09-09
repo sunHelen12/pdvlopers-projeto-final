@@ -10,7 +10,7 @@ const transacoes = [
     { month: "Jun", entrada: 500, saida: 1700, data: "2025-06-10" },
     { month: "Jul", entrada: 987, saida: 2400, data: "2025-07-10" },
     { month: "Ago", entrada: 3000, saida: 1398, data: "2025-08-12" },
-    { month: "Set", entrada: 2000, saida: 9800, data: "2025-09-18" },
+    { month: "Set", entrada: 2000, saida: 1800, data: "2025-09-18" },
     { month: "Out", entrada: 2780, saida: 3908, data: "2024-10-05" },
     { month: "Nov", entrada: 1890, saida: 4800, data: "2024-11-22" },
     { month: "Dez", entrada: 2390, saida: 3800, data: "2024-12-15" },
