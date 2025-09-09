@@ -12,6 +12,9 @@ const app = express();
 // Porta que o servidor irá rodar
 const PORT = process.env.PORT || 3333;
 
+app.use(cors()); 
+app.use(express.json());
+
 // Configuração de middlewares
 app.use(cors());
 app.use(express.json());
