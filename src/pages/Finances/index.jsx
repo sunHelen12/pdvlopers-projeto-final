@@ -22,9 +22,7 @@ export function Finances() {
     const [showModal, setShowModal] = useState(false);
     const [periodo, setPeriodo] = useState(1);
 
-    // ===========================
     // FILTRO: Transações do mês atual
-    // ===========================
     const transacoesMesAtual = useMemo(() => {
         const hoje = new Date();
         const mesAtual = hoje.getMonth();
@@ -36,9 +34,7 @@ export function Finances() {
         });
     }, [transactions]);
 
-    // ===========================
     // CÁLCULOS DOS CARDS
-    // ===========================
     const totalEntradas = transacoesMesAtual
         .filter(t => t.type === "entrada")
         .reduce((acc, t) => acc + t.amount, 0);
@@ -56,9 +52,7 @@ export function Finances() {
             currency: "BRL",
         }).format(value);
 
-    // ===========================
     // TABS
-    // ===========================
     const buttons = [
         { id: 'transacoes', label: "Transações" },
         { id: 'graficos', label: "Gráficos" },
@@ -89,9 +83,6 @@ export function Finances() {
         ),
     };
 
-    // ===========================
-    // RENDER
-    // ===========================
     return (
         <Layout>
             <div className={styles.container}>

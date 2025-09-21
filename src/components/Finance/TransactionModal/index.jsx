@@ -30,13 +30,13 @@ export function TransactionModal({ onSave, onClose }) {
             cliente: somarPontos === "sim" ? selectedClient : null
         };
 
-        console.log("Nova transação:", newTransaction); // para verificar
+        console.log("Nova transação:", newTransaction);
         onSave(newTransaction);
         onClose();
     };
 
     const handleBuscarCliente = () => {
-        const cpfFormatado = cpfCliente.replace(/\D/g, ""); // remove pontos e traço
+        const cpfFormatado = cpfCliente.replace(/\D/g, "");
         const client = clientsData.find(c => c.cpf.replace(/\D/g, "") === cpfFormatado);
         setSelectedClient(client || null);
     };

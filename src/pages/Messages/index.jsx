@@ -55,11 +55,11 @@ export function Messages() {
                     </MessageContent>
                 </TabContent>
 
-                <TabContent title="Envio por WhatsApp" subtitle="Envie mensagens diretas via WhatsApp">
+                {/* <TabContent title="Envio por WhatsApp" subtitle="Envie mensagens diretas via WhatsApp">
                     <MessageContent icon={<FiMessageCircle />} text="Envie mensagens instantâneas para seus clientes">
                         <SendMessages text="Criar Mensagem" type="WhatsApp" />
                     </MessageContent>
-                </TabContent>
+                </TabContent> */}
 
             </div>
         ),
