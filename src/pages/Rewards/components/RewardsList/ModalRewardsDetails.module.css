@@ -1,4 +1,13 @@
-﻿.overlay {
+﻿:root{
+  /* Cores da Paleta */
+  --yellowPalette: #ffb60b;
+  --orangePalette: #fb5607;
+  --pinkPalette: #ff006e;
+  --brownPallete: #523a34;
+  --bluePallete: #3a86ff;
+}
+
+.overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -77,7 +86,7 @@
 .imagePlaceholder {
   color: #d1d5db;
   background-color: #f9fafb;
-  padding: 2rem;
+  padding: 4rem;
   border-radius: 12px;
 }
 
@@ -100,21 +109,24 @@
 }
 
 .statusAvailable {
-  background-color: #10b981;
+  background-color: black;
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  cursor: pointer;
+  border: none;
+}
+
+.statusAvailable , .statusUnavailable{
+  width: 25%;
+  padding: 3px;
+  border-radius: 9px;
+  font-size: 13px;
 }
 
 .statusUnavailable {
-  background-color: #6b7280;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  background-color:  #ffffff;
+  color: #B3B3B4;
+  cursor: not-allowed;
+  box-shadow: 0px 0.5px 4px rgba(0, 0, 0, 0.1);
 }
 
 .categoryBadge {
@@ -182,7 +194,7 @@
 }
 
 .cancelButton {
-  background-color: #6b7280;
+  background-color: var(--brownPallete);
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -193,11 +205,11 @@
 }
 
 .cancelButton:hover {
-  background-color: #4b5563;
+  background-color: #3d2b27;
 }
 
 .redeemButton {
-  background-color: #10b981;
+  background-color: var(--bluePallete);
   color: white;
   padding: 0.75rem 1.5rem;
   border: none;
@@ -208,7 +220,7 @@
 }
 
 .redeemButton:hover {
-  background-color: #059669;
+  background-color: #1b64da;
 }
 
 @media (max-width: 640px) {

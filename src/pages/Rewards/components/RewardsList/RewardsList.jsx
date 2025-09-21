@@ -16,8 +16,6 @@ export const RewardsList = () => {
     { id: 4, name: "Brinde Especial", points: 1000, available: false, validityDate: null },
   ]);
 
-  
-
   // Função para verificar e atualizar a disponibilidade das recompensas
   const checkRewardsValidity = () => {
     const now = new Date();
@@ -131,6 +129,7 @@ export const RewardsList = () => {
             <button 
               className={reward.available ? styles.cardButtonActive : styles.cardButtonDisabled}
               disabled={!reward.available}
+              onClick={() => reward.available && handleViewDetails(reward)}
             >
               {reward.available ? 'Ver Detalhes' : 'Indisponível'}
             </button>
@@ -145,6 +144,12 @@ export const RewardsList = () => {
       >
         <RewardForm onClose={handleCloseModal} onAddReward={handleAddReward} />
       </ModalRewardsList>
+
+      <ModalRewardsDetails 
+        isOpen={isDetailsModalOpen}
+        onClose={handleCloseDetails}
+        reward={selectedReward}
+      />
     </div>
   );
 };
