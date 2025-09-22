@@ -2,6 +2,8 @@ import { useState } from "react";
 import styles from "./MessageModal.module.css";
 import { Header } from "../../Finance/Header";
 
+const MAX_MESSAGE_LENGTH = 360;
+
 export function MessageModal({ type, isOpen, onClose }) {
     const [segment, setSegment] = useState("");
     const [subject, setSubject] = useState("");
@@ -19,10 +21,8 @@ export function MessageModal({ type, isOpen, onClose }) {
 
         console.log("Enviando mensagem:", data);
 
-        // Depois de enviar, fechar o modal
         onClose();
 
-        // Opcional: limpar campos
         setSegment("");
         setSubject("");
         setMessage("");
@@ -49,7 +49,7 @@ export function MessageModal({ type, isOpen, onClose }) {
 
                 <form
                     onSubmit={(e) => {
-                        e.preventDefault(); // impede reload
+                        e.preventDefault();
                         handleSendMessage();
                     }}
                     className={styles.form}
@@ -86,15 +86,15 @@ export function MessageModal({ type, isOpen, onClose }) {
                         <textarea
                             value={message}
                             onChange={(e) => {
-                                if (e.target.value.length <= 160) {
+                                if (e.target.value.length <= MAX_MESSAGE_LENGTH) {
                                     setMessage(e.target.value);
                                 }
                             }}
                             placeholder="Escreva sua mensagem"
                         />
                         <div className={styles.textareaWarning}>
-                            <p>Máximo 160 caracteres</p>
-                            <p>{message.length}/160</p>
+                            <p>Máximo {MAX_MESSAGE_LENGTH} caracteres</p>
+                            <p>{message.length}/{MAX_MESSAGE_LENGTH}</p>
                         </div>
                     </div>
 

@@ -1,19 +1,18 @@
+//styles
 import styles from "./messages.module.css";
-
+//data mock
 import clients from '../../data/mockClients.json'
-
+//Componets
 import { Tabs } from "../../components/Finance/Tabs";
 import { Header } from "../../components/Finance/Header";
 import { TabContent } from "../../components/Finance/TabContent";
 import { MessageContent } from "../../components/Messages/MessageContent";
 import { SendMessages } from "../../components/Messages/SendMessages";
 import { BirthdayItem } from "../../components/Messages/BirthdayItem";
-
-import { FiMessageCircle } from "react-icons/fi";
+//icones
 import { MdOutlineEmail } from "react-icons/md";
 import { MessageHistory } from "../../components/Messages/MessageHistory";
 import { Layout } from "../../components/Layout/Layout";
-
 
 export function Messages() {
     const buttons = [
@@ -22,29 +21,29 @@ export function Messages() {
         { id: 'historico', label: "Histórico" },
     ]
 
-    const mensagensEnviadas = [
-        {
-            id: 1,
-            title: "Promoção de Setembro",
-            type: "email",
-            numberRecipients: 120,
-            date: "2025-09-09"
-        },
-        {
-            id: 2,
-            title: "Lembrete de pontos",
-            type: "whatsapp",
-            numberRecipients: 45,
-            date: "2025-09-08"
-        }
-    ];
-
     const currentMonth = new Date().getMonth(); // Janeiro = 0, Fevereiro = 1, ...
 
     const aniversariantesDoMes = clients.filter(client => {
         const birthDate = new Date(client.dataNascimento);
         return birthDate.getMonth() === currentMonth;
     });
+
+    const mockMessages = [
+        {
+            id: 1,
+            title: "Promoção de Aniversário",
+            category: "whatsapp",
+            numberRecipients: 25,
+            date: "2025-09-20"
+        },
+        {
+            id: 2,
+            title: "Newsletter Mensal",
+            category: "email",
+            numberRecipients: 100,
+            date: "2025-09-19"
+        }
+    ];
 
     const contents = {
         mensagens: (
@@ -87,7 +86,17 @@ export function Messages() {
 
         historico: (
             <TabContent title="Histórico de Envios" subtitle="Campanhas e mensagens enviadas">
-                <MessageHistory messages={mensagensEnviadas} />
+                <div className={styles.historyList}>
+                    {mockMessages.map(msg => (
+                        <MessageHistory
+                            key={msg.id}
+                            title={msg.title}
+                            category={msg.category}
+                            numberRecipients={msg.numberRecipients}
+                            date={msg.date}
+                        />
+                    ))}
+                </div>
             </TabContent>
         ),
     };
