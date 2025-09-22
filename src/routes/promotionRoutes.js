@@ -2,10 +2,10 @@
 const express = require("express");
 const router = express.Router();
 
-const supabase = require("../config/database"); 
+const supabase = require("../config/database");
 const { sendEmail } = require("../utils/email");
 
-// --- Helpers ---
+// ---------- Helpers ----------
 const parseBool = (v) => (typeof v === "boolean" ? v : v === "true");
 const isISODate = (v) => !v || !isNaN(Date.parse(v));
 
@@ -17,20 +17,196 @@ const badReq = (res, msg) => res.status(400).json({ error: msg });
 const fail = (res, err) =>
   res.status(500).json({ error: err?.message || "Erro interno" });
 
-// --- ROTAS LITERAIS PRIMEIRO (evitam colisão com /:id) ---
-router.post("/send-email", (req, res) => {
-  return ok(res, { message: "Enviar email promocional - implementar (João Jacques)" });
+// ---------- Segmentos ----------
+const SEGMENTS = [
+  { key: "ALL", label: "Todos os clientes" },
+  { key: "VIP", label: "Clientes VIP" },
+  { key: "GOLD", label: "Clientes Gold" },
+  { key: "SILVER", label: "Clientes Silver" },
+  { key: "INACTIVE", label: "Clientes inativos" },
+];
+
+// Limiares configuráveis (ENV) com defaults seguros
+const TIER_LIMITS = {
+  VIP_MIN: Number.parseInt(process.env.LOYALTY_VIP_MIN || "1000", 10),
+  GOLD_MIN: Number.parseInt(process.env.LOYALTY_GOLD_MIN || "500", 10),
+  SILVER_MIN: Number.parseInt(process.env.LOYALTY_SILVER_MIN || "200", 10),
+  INACTIVE_DAYS: Number.parseInt(process.env.LOYALTY_INACTIVE_DAYS || "90", 10),
+};
+
+/** Templating simples: {{nome}} */
+const applyTemplate = (text, cliente) =>
+  String(text || "").replaceAll("{{nome}}", cliente?.nome || "");
+
+/** Busca clientes por IDs, padronizando campos básicos */
+async function fetchClientesByIds(ids) {
+  if (!ids?.length) return [];
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("id, nome, email, telefone")
+    .in("id", ids);
+  if (error) throw error;
+  return data || [];
+}
+
+/** Resolve audiência conforme segmento (retorna [{ id, nome, email, telefone }]) */
+async function getAudienceBySegment({ segment }) {
+  if (segment === "ALL") {
+    const { data, error } = await supabase
+      .from("clientes")
+      .select("id, nome, email, telefone");
+    if (error) throw error;
+    return data || [];
+  }
+
+  // Segmentos por pontuação — requer a view vw_cliente_pontos
+  if (segment === "VIP" || segment === "GOLD" || segment === "SILVER") {
+    const { VIP_MIN, GOLD_MIN, SILVER_MIN } = TIER_LIMITS;
+
+    let gte = null;
+    let lt = null;
+
+    if (segment === "VIP") {
+      gte = VIP_MIN;            // [VIP_MIN, ∞)
+      lt = null;
+    } else if (segment === "GOLD") {
+      gte = GOLD_MIN;           // [GOLD_MIN, VIP_MIN)
+      lt = VIP_MIN;
+    } else if (segment === "SILVER") {
+      gte = SILVER_MIN;         // [SILVER_MIN, GOLD_MIN)
+      lt = GOLD_MIN;
+    }
+
+    let query = supabase
+      .from("vw_cliente_pontos")
+      .select("cliente_id, pontos");
+
+    if (gte !== null) query = query.gte("pontos", gte);
+    if (lt !== null) query = query.lt("pontos", lt);
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const ids = (data || []).map((r) => r.cliente_id);
+    return await fetchClientesByIds(ids);
+  }
+
+  // Inativos: sem transação de fidelidade recente (>= INACTIVE_DAYS sem atividade)
+  if (segment === "INACTIVE") {
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - TIER_LIMITS.INACTIVE_DAYS);
+
+    // 1) última atividade por cliente: select com agregação
+    // PostgREST suporta agregações: select=client_id,max:created_at&group=client_id
+    const { data: lastTx, error: lastErr } = await supabase
+      .from("loyalty_transactions")
+      .select("client_id,max:created_at")
+      .group("client_id");
+
+    if (lastErr) throw lastErr;
+
+    // 2) pega todos os clientes
+    const { data: allClientes, error: cliErr } = await supabase
+      .from("clientes")
+      .select("id, nome, email, telefone");
+    if (cliErr) throw cliErr;
+
+    // 3) mapeia última atividade
+    const lastByClient = new Map();
+    (lastTx || []).forEach((r) => {
+      // r.max é o alias de created_at (max)
+      lastByClient.set(r.client_id, r.max);
+    });
+
+    // 4) inativos = quem não tem entrada OU max(created_at) < cutoff
+    const inactive = (allClientes || []).filter((c) => {
+      const last = lastByClient.get(c.id);
+      if (!last) return true; // nunca pontuou
+      return new Date(last) < cutoff;
+    });
+
+    return inactive;
+  }
+
+  throw new Error("segment inválido");
+}
+
+// ---------- ROTAS LITERAIS PRIMEIRO (evitam colisão com /:id) ----------
+
+/**
+ * GET /api/promotions/segments
+ * Query:
+ *   - preview=true|false (opcional)
+ *   - segment=ALL|VIP|GOLD|SILVER|INACTIVE (opcional; exigido se preview=true)
+ */
+router.get("/segments", async (req, res) => {
+  const preview = parseBool(req.query.preview);
+  const segment = req.query.segment;
+
+  if (!preview) return ok(res, { list: SEGMENTS, limits: TIER_LIMITS });
+
+  if (!segment) return badReq(res, "Informe segment para preview");
+  try {
+    const audience = await getAudienceBySegment({ segment });
+    return ok(res, {
+      list: SEGMENTS,
+      limits: TIER_LIMITS,
+      preview: { count: audience.length, sample: audience.slice(0, 20) },
+    });
+  } catch (err) {
+    return fail(res, err);
+  }
 });
 
-// router.post("/send-whatsapp", (req, res) => {
-//   return ok(res, { message: "Enviar WhatsApp - implementar (João Jacques)" });
-// });
+/**
+ * POST /api/promotions/send-email
+ * Body:
+ *   - segment: "ALL" | "VIP" | "GOLD" | "SILVER" | "INACTIVE" (required)
+ *   - subject: string (required)
+ *   - message: string (required) — suporta {{nome}}
+ *   - test_only: boolean (opcional) → se true, não envia; só retorna audiência
+ */
+router.post("/send-email", async (req, res) => {
+  try {
+    const { segment, subject, message, test_only = false } = req.body || {};
+    if (!segment) return badReq(res, "segment é obrigatório");
+    if (!subject || !message) return badReq(res, "subject e message são obrigatórios");
 
-router.get("/segments", (req, res) => {
-  return ok(res, { message: "Listar segmentos de clientes - implementar (João Jacques)" });
+    const audience = await getAudienceBySegment({ segment });
+
+    if (test_only) {
+      return ok(res, {
+        meta: { total: audience.length, segment },
+        sample: audience.slice(0, 20),
+      });
+    }
+
+    let sent = 0, failed = 0;
+    const results = await Promise.allSettled(
+      audience.map((cli) => {
+        if (!cli.email) { failed++; return Promise.resolve(); }
+        const subj = applyTemplate(subject, cli);
+        const txt  = applyTemplate(message, cli);
+        const html = `<p>${txt.replace(/\n/g, "<br/>")}</p>`;
+        return sendEmail({ to: cli.email, subject: subj, text: txt, html })
+          .then(() => { sent++; })
+          .catch(() => { failed++; });
+      })
+    );
+
+    return ok(res, {
+      segment,
+      total: audience.length,
+      sent,
+      failed,
+      results, // opcional: remova em produção se preferir
+    });
+  } catch (err) {
+    return fail(res, err);
+  }
 });
 
-// --- CRUD BASEADO EM BANCO (canônico) ---
+// ---------- CRUD BASEADO EM BANCO (canônico) ----------
 
 /**
  * GET /promotions
@@ -135,7 +311,6 @@ router.post("/", async (req, res) => {
         .select("email");
 
       if (usersErr) {
-        // Não falha a requisição, mas loga
         console.error("[usersErr]", usersErr);
       } else if (users?.length) {
         const results = await Promise.allSettled(
@@ -224,9 +399,7 @@ router.delete("/:id", async (req, res) => {
   }
 });
 
-// --- (Opcional) Endpoints de MOCK, atrás de um prefixo claro ---
-// Para usar, defina um array fora daqui: const mockPromotions = [...];
-// E ative por ENV: USE_PROMO_MOCK === "true"
+// ---------- (Opcional) Endpoints de MOCK ----------
 if (process.env.USE_PROMO_MOCK === "true") {
   const mockPromotions = []; // substitua pelo seu mock real
 
