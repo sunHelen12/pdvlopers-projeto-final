@@ -1,223 +1,306 @@
+// src/controllers/loyaltyController.js
 const supabase = require("../config/database");
-// Importa funções de serviço e constantes para não repetir código
-const { findClientById, updateClientPoints, addTransaction, TRANSACTION_TYPES } = require("../services/loyalty.service");
-// Schemas de validação com Joi para garantir dados corretos
-const { addPointsSchema, redeemPointsSchema, rewardSchema } = require("../utils/validators");
+const Joi = require("joi");
 
-/**
- * Busca o saldo de pontos de um cliente específico
- */
-async function getClientPoints(req, res) {
-    const { clientId } = req.params;
-    // Busca cliente pelo ID
-    const { data, error } = await findClientById(clientId);
-    if (error || !data) return res.status(404).json({ error: "Cliente não encontrado" });
+// -------------------- Schemas (Joi) --------------------
+const earnSchema = Joi.object({
+  clientId: Joi.alternatives()
+    .try(Joi.number().integer().positive(), Joi.string().pattern(/^\d+$/))
+    .required()
+    .messages({ "any.required": "clientId é obrigatório" }),
+  amount: Joi.number().positive().required().messages({
+    "number.base": "amount deve ser numérico",
+    "number.positive": "amount deve ser positivo",
+    "any.required": "amount é obrigatório",
+  }),
+  description: Joi.string().allow("").optional(),
+});
 
-    // Retorna ID e saldo de pontos
-    res.json({ clientId, points_balance: data.points_balance });
-}
+const redeemSchema = Joi.object({
+  clientId: Joi.alternatives()
+    .try(Joi.number().integer().positive(), Joi.string().pattern(/^\d+$/))
+    .required(),
+  rewardId: Joi.string().guid({ version: ["uuidv4", "uuidv5", "uuidv1"] }).required(),
+  description: Joi.string().allow("").optional(),
+});
 
-/**
- * Adiciona pontos ao saldo de um cliente
-}*/
-async function addPoints(req, res) {
-    // Valida entrada usando Joi
-    const { error: validationError } = addPointsSchema.validate(req.body);
-    if (validationError) return res.status(400).json({ error: validationError.message });
+const rewardCreateSchema = Joi.object({
+  name: Joi.string().min(2).required(),
+  description: Joi.string().allow("").optional(),
+  points_required: Joi.number().integer().min(1).required(),
+});
 
-    const { clientId, amount, description } = req.body;
+const rewardUpdateSchema = Joi.object({
+  name: Joi.string().min(2).optional(),
+  description: Joi.string().allow("").optional(),
+  points_required: Joi.number().integer().min(1).optional(),
+  active: Joi.boolean().optional(),
+}).min(1);
 
-    // Verifica se cliente existe
-    const { data: client, error: clientError } = await findClientById(clientId);
-    if (clientError || !client) return res.status(404).json({ error: "Cliente não encontrado" });
+// -------------------- Helpers --------------------
+async function ensureClientExists(clientId) {
+  const id = Number(clientId);
+  if (!Number.isInteger(id) || id <= 0) return { exists: false, id: null };
 
-    // Calcula pontos a partir do valor da compra
-    const points = Math.floor((amount / 100) * 10); // regra: 100 reais = 10 pontos
-
-    // Calcula novo saldo
-    const newBalance = client.points_balance + points;
-
-    // Atualiza saldo no banco
-    await updateClientPoints(clientId, newBalance);
-
-    // Registra a transação no histórico
-    await addTransaction({
-        client_id: clientId,
-        type: TRANSACTION_TYPES.EARN,
-        points,
-        amount,
-        description: description ?? `Compra de R$${amount} gerou ${points} pontos`
-    });
-
-    // Retorna sucesso com novo saldo
-    res.status(201).json({ message: "Pontos adicionados", clientId, newBalance, earned: points });
-}
-
-
-/**
- * Resgata pontos do cliente em troca de um brinde
-    */
-async function redeemPoints(req, res) {
-  // Valida entrada com Joi
-  const { error: validationError } = redeemPointsSchema.validate(req.body);
-  if (validationError) return res.status(400).json({ error: validationError.message });
-
-  const { clientId, rewardId, description } = req.body;
-
-  // Verifica se cliente existe
-  const { data: client, error: clientError } = await findClientById(clientId);
-  if (clientError || !client) return res.status(404).json({ error: "Cliente não encontrado" });
-
-  // Busca o brinde pelo ID
-  const { data: reward, error: rewardError } = await supabase
-    .from("rewards")
-    .select("*")
-    .eq("id", rewardId)
+  const { data, error } = await supabase
+    .from("clientes")
+    .select("id")
+    .eq("id", id)
     .single();
 
-  if (rewardError || !reward) return res.status(404).json({ error: "Brinde não encontrado" });
-
-  // Checa se há saldo suficiente
-  if (client.points_balance < reward.points_required) {
-    return res.status(400).json({ error: "Saldo insuficiente" });
-  }
-
-  // Calcula novo saldo
-  const newBalance = client.points_balance - reward.points_required;
-
-  // Atualiza saldo no banco
-  await updateClientPoints(clientId, newBalance);
-
-  // Registra a transação no histórico
-  await addTransaction({
-    client_id: clientId,
-    type: TRANSACTION_TYPES.REDEEM,
-    points: reward.points_required, // pontos vêm do brinde
-    reward_id: rewardId,
-    description: description ?? reward.name // usa descrição enviada ou nome do brinde
-  });
-
-  res.status(201).json({
-    message: "Pontos resgatados com sucesso",
-    clientId,
-    reward: reward.name,
-    pointsUsed: reward.points_required,
-    newBalance
-  });
+  if (error || !data) return { exists: false, id };
+  return { exists: true, id };
 }
 
+async function getBalance(clientId) {
+  const id = Number(clientId);
+  const { data, error } = await supabase
+    .from("loyalty_transactions")
+    .select("type, points")
+    .eq("client_id", id);
 
+  if (error) throw new Error(error.message);
+
+  const total = (data || []).reduce(
+    (acc, r) => acc + (r.type === "earn" ? r.points : -r.points),
+    0
+  );
+  return total;
+}
+
+// -------------------- Controllers --------------------
 /**
- * Lista todos os brindes ativos
+ * GET /api/loyalty/points/:clientId
+ * Retorna saldo atual (somando transações)
  */
-async function listRewards(req, res) {
-    const { data, error } = await supabase
-        .from("rewards")
-        .select("*");
+async function getClientPoints(req, res) {
+  try {
+    const { clientId } = req.params;
+    const { exists, id } = await ensureClientExists(clientId);
+    if (!exists) return res.status(404).json({ error: "Cliente não encontrado" });
 
-    if (error) return res.status(500).json({ error: "Erro ao buscar brindes" });
-    res.json(data);
+    const points = await getBalance(id);
+    return res.json({ clientId: id, points });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
 }
 
 /**
- * Cria um novo brinde
+ * POST /api/loyalty/points/add
+ * Regra de pontos: 100 reais = 10 pontos (=> points = floor(amount * 0.1))
+ */
+async function addPoints(req, res) {
+  try {
+    const payload = await earnSchema.validateAsync(req.body, { convert: true, abortEarly: false });
+    const client_id = Number(payload.clientId);
+    const amount = Number(payload.amount);
+    const description = payload.description || `Compra de R$${amount.toFixed(2)}`;
+
+    // valida cliente
+    const { exists } = await ensureClientExists(client_id);
+    if (!exists) return res.status(404).json({ error: "Cliente não encontrado" });
+
+    // calcula pontos
+    const points = Math.floor(amount * 0.1);
+
+    const { data, error } = await supabase
+      .from("loyalty_transactions")
+      .insert([{ client_id, type: "earn", points, amount, description }])
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    // saldo atualizado
+    const newBalance = await getBalance(client_id);
+    return res.status(201).json({
+      message: "Pontos adicionados",
+      item: data,
+      balance: newBalance,
+    });
+  } catch (err) {
+    if (err.isJoi) {
+      return res.status(400).json({ error: err.details.map(d => d.message).join(", ") });
+    }
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
+}
+
+/**
+ * POST /api/loyalty/points/redeem
+ * Resgata pontos via rewardId (uuid) se houver saldo suficiente
+ */
+async function redeemPoints(req, res) {
+  try {
+    const payload = await redeemSchema.validateAsync(req.body, { convert: true, abortEarly: false });
+    const client_id = Number(payload.clientId);
+    const { rewardId, description } = payload;
+
+    const { exists } = await ensureClientExists(client_id);
+    if (!exists) return res.status(404).json({ error: "Cliente não encontrado" });
+
+    // busca reward
+    const { data: reward, error: rewardErr } = await supabase
+      .from("rewards")
+      .select("*")
+      .eq("id", rewardId)
+      .single();
+
+    if (rewardErr || !reward) return res.status(404).json({ error: "Brinde não encontrado" });
+
+    // verifica saldo
+    const current = await getBalance(client_id);
+    if (current < reward.points_required) {
+      return res.status(400).json({ error: "Saldo insuficiente" });
+    }
+
+    // registra transação de resgate
+    const { data, error } = await supabase
+      .from("loyalty_transactions")
+      .insert([{
+        client_id,
+        type: "redeem",
+        points: reward.points_required,
+        reward_id: reward.id,
+        description: description || reward.name,
+      }])
+      .select()
+      .single();
+
+    if (error) return res.status(400).json({ error: error.message });
+
+    const newBalance = await getBalance(client_id);
+    return res.status(201).json({
+      message: "Pontos resgatados com sucesso",
+      item: data,
+      reward: { id: reward.id, name: reward.name, cost: reward.points_required },
+      balance: newBalance,
+    });
+  } catch (err) {
+    if (err.isJoi) {
+      return res.status(400).json({ error: err.details.map(d => d.message).join(", ") });
+    }
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
+}
+
+/**
+ * GET /api/loyalty/rewards
+ */
+async function listRewards(_req, res) {
+  try {
+    const { data, error } = await supabase.from("rewards").select("*").order("created_at", { ascending: false });
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(data || []);
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
+}
+
+/**
+ * POST /api/loyalty/rewards
  */
 async function createReward(req, res) {
-    // Valida dados do brinde
-    const { error: validationError } = rewardSchema.validate(req.body);
-    if (validationError) return res.status(400).json({ error: validationError.message });
+  try {
+    const payload = await rewardCreateSchema.validateAsync(req.body, { abortEarly: false });
+    const { name, description, points_required } = payload;
 
-    const { name, description, points_required} = req.body;
-
-    // Insere brinde no banco
     const { data, error } = await supabase
-        .from("rewards")
-        .insert([{ name, description, points_required }])
-        .select()
-        .single();
+      .from("rewards")
+      .insert([{ name, description, points_required }])
+      .select()
+      .single();
 
-    if (error) return res.status(500).json({ error: "Erro ao criar brinde" });
-    res.status(201).json(data);
+    if (error) return res.status(400).json({ error: error.message });
+    return res.status(201).json(data);
+  } catch (err) {
+    if (err.isJoi) return res.status(400).json({ error: err.details.map(d => d.message).join(", ") });
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
 }
 
 /**
- * Busca um brinde específico pelo ID
+ * GET /api/loyalty/rewards/:id
  */
 async function getRewardById(req, res) {
+  try {
     const { id } = req.params;
-    const { data, error } = await supabase
-        .from("rewards")
-        .select("*")
-        .eq("id", id)
-        .single();
-
+    const { data, error } = await supabase.from("rewards").select("*").eq("id", id).single();
     if (error || !data) return res.status(404).json({ error: "Brinde não encontrado" });
-    res.json(data);
+    return res.json(data);
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
 }
 
 /**
- * Atualiza dados de um brinde
+ * PUT /api/loyalty/rewards/:id
  */
 async function updateReward(req, res) {
+  try {
     const { id } = req.params;
-
-    // Monta objeto apenas com os campos enviados
-    const updateData = {};
-    const { name, description, points_required, active } = req.body;
-    if (name) updateData.name = name;
-    if (description) updateData.description = description;
-    if (typeof points_required === "number") updateData.points_required = points_required;
-    if (typeof active === "boolean") updateData.active = active;
+    const patch = await rewardUpdateSchema.validateAsync(req.body, { abortEarly: false });
 
     const { data, error } = await supabase
-        .from("rewards")
-        .update(updateData)
-        .eq("id", id)
-        .select()
-        .single();
+      .from("rewards")
+      .update(patch)
+      .eq("id", id)
+      .select()
+      .single();
 
     if (error || !data) return res.status(404).json({ error: "Brinde não encontrado ou erro ao atualizar" });
-    res.json(data);
+    return res.json(data);
+  } catch (err) {
+    if (err.isJoi) return res.status(400).json({ error: err.details.map(d => d.message).join(", ") });
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
 }
 
 /**
- * Deleta um brinde
+ * DELETE /api/loyalty/rewards/:id
  */
 async function deleteReward(req, res) {
+  try {
     const { id } = req.params;
-    const { error } = await supabase
-        .from("rewards")
-        .delete()
-        .eq("id", id);
-
+    const { error } = await supabase.from("rewards").delete().eq("id", id);
     if (error) return res.status(404).json({ error: "Brinde não encontrado ou erro ao deletar" });
-    res.json({ message: "Brinde deletado com sucesso" });
+    return res.json({ message: "Brinde deletado com sucesso" });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
 }
 
 /**
- * Retorna histórico de pontos do cliente
+ * GET /api/loyalty/history/:clientId
  */
 async function getHistory(req, res) {
+  try {
     const { clientId } = req.params;
-    const { data, error } = await supabase
-        .from("loyalty_transactions")
-        .select("*")
-        .eq("client_id", clientId)
-        .order("created_at", { ascending: false });
+    const { exists, id } = await ensureClientExists(clientId);
+    if (!exists) return res.status(404).json({ error: "Cliente não encontrado" });
 
-    if (error) return res.status(500).json({ error: "Erro ao buscar histórico" });
-    res.json(data);
+    const { data, error } = await supabase
+      .from("loyalty_transactions")
+      .select("*")
+      .eq("client_id", id)
+      .order("created_at", { ascending: false });
+
+    if (error) return res.status(500).json({ error: error.message });
+    return res.json(data || []);
+  } catch (err) {
+    return res.status(500).json({ error: err.message || "Erro interno" });
+  }
 }
 
-// Exporta todas as funções do controller
 module.exports = {
-    getClientPoints,
-    addPoints,
-    redeemPoints,
-    listRewards,
-    createReward,
-    getRewardById,
-    updateReward,
-    deleteReward,
-    getHistory
+  getClientPoints,
+  addPoints,
+  redeemPoints,
+  listRewards,
+  createReward,
+  getRewardById,
+  updateReward,
+  deleteReward,
+  getHistory,
 };
