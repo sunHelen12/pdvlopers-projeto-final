@@ -1,25 +1,72 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const clienteController = require('../controllers/clienteController');
+const ClientsService = require("../services/clients.service");
+// opcional: proteger com auth
+// const auth = require("../middleware/authMiddleware");
 
-// Rota para CRIAR um novo cliente (CREATE)
-// POST http://localhost:3000/clientes
-router.post('/', clienteController.createCliente);
+const ok = (res, data) => res.json(data);
+const created = (res, data) => res.status(201).json(data);
+const badReq = (res, msg) => res.status(400).json({ error: msg });
+const notFound = (res, msg = "Cliente não encontrado") => res.status(404).json({ error: msg });
+const fail = (res, err) => res.status(500).json({ message: "Erro interno", error: err?.message });
 
-// Rota para LER todos os clientes (READ)
-// GET http://localhost:3000/clientes
-router.get('/', clienteController.getAllClientes);
+/** GET /api/clients */
+router.get("/", async (_req, res) => {
+  try {
+    const items = await ClientsService.findAllClientes();
+    return ok(res, { items });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
 
-// Rota para LER um cliente específico pelo ID (READ)
-// GET http://localhost:3000/clientes/1
-router.get('/:id', clienteController.getClienteById);
+/** GET /api/clients/:id */
+router.get("/:id", async (req, res) => {
+  try {
+    const item = await ClientsService.findClienteById(req.params.id);
+    if (!item) return notFound(res);
+    return ok(res, { item });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
 
-// Rota para ATUALIZAR um cliente pelo ID (UPDATE)
-// PUT http://localhost:3000/clientes/1
-router.put('/:id', clienteController.updateCliente);
+/** POST /api/clients */
+router.post("/", async (req, res) => {
+  try {
+    const { nome, cpf } = req.body || {};
+    if (!nome || !cpf) return badReq(res, "nome e cpf são obrigatórios");
 
-// Rota para DELETAR um cliente pelo ID (DELETE)
-// DELETE http://localhost:3000/clientes/1
-router.delete('/:id', clienteController.deleteCliente);
+    const result = await ClientsService.createCliente(req.body);
+    if (result?.success === false) {
+      return res.status(409).json({ error: result.message });
+    }
+    return created(res, { item: result.cliente });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+/** PUT /api/clients/:id */
+router.put("/:id", async (req, res) => {
+  try {
+    const item = await ClientsService.updateCliente(req.params.id, req.body || {});
+    if (!item) return notFound(res);
+    return ok(res, { item });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
+
+/** DELETE /api/clients/:id */
+router.delete("/:id", async (req, res) => {
+  try {
+    const deleted = await ClientsService.deleteCliente(req.params.id);
+    if (!deleted) return notFound(res);
+    return ok(res, { message: "Cliente removido", id: req.params.id });
+  } catch (err) {
+    return fail(res, err);
+  }
+});
 
 module.exports = router;

@@ -53,7 +53,8 @@ async function fetchClientesByIds(ids) {
   const { data, error } = await supabase
     .from("clientes")
     .select("id, nome, email, telefone")
-    .in("id", ids);
+    .in("id", ids)
+    .eq("optout_email", false); 
   if (error) throw error;
   return data || [];
 }
@@ -64,7 +65,8 @@ async function getAudienceBySegment({ segment }) {
   if (segment === "ALL") {
     const { data, error } = await supabase
       .from("clientes")
-      .select("id, nome, email, telefone");
+      .select("id, nome, email, telefone")
+      .eq("optout_email", false);
     if (error) throw error;
     return data || [];
   }

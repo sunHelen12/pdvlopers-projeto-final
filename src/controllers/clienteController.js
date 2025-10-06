@@ -1,5 +1,5 @@
 // Importa os serviços que vamos utilizar
-const clienteService = require('../services/clienteService');
+const ClientsService = require("../services/clients.service");
 
 // Controlador para criar um novo cliente
 exports.createCliente = async (req, res) => {
