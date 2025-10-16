@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Sistema Mercadinho - Full Stack Application",
   "main": "src/server.js",
-  "type": "module",
   "private": true,
   "scripts": {
     "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
@@ -22,7 +21,12 @@
     "swagger": "swagger-jsdoc -d swaggerDef.js src/routes/*.js -o swagger.json",
     "scheduler:birthday": "node src/scheduler/birthday.js"
   },
-  "keywords": ["mercadinho", "full-stack", "react", "express"],
+  "keywords": [
+    "mercadinho",
+    "full-stack",
+    "react",
+    "express"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
@@ -54,6 +58,7 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@supabase/supabase-js": "^2.55.0",
+    "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -97,7 +102,7 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "@vitejs/plugin-react": "^5.0.1",
+    "@vitejs/plugin-react": "^4.2.0",
     "autoprefixer": "^10.4.20",
     "concurrently": "^8.2.2",
     "eslint": "^8.55.0",
@@ -110,7 +115,7 @@
     "supertest": "^6.3.3",
     "tailwindcss": "^3.3.6",
     "typescript": "^5.3.3",
-    "vite": "^5.0.8"
+    "vite": "^4.5.0"
   },
   "overrides": {
     "react": "18.3.1",
