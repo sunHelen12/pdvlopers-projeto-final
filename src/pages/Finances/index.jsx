@@ -15,7 +15,12 @@ import { Header } from "../../components/Finance/Header";
 import { TransactionModal } from "../../components/Finance/TransactionModal";
 //icons
 import { MdOutlineAttachMoney } from "react-icons/md";
-import { LuCalendar, LuPlus, LuTrendingUp, LuTrendingDown } from "react-icons/lu";
+import {
+  LuCalendar,
+  LuPlus,
+  LuTrendingUp,
+  LuTrendingDown,
+} from "react-icons/lu";
 
 export function Finances() {
   const [transactions, setTransactions] = useState([]);
@@ -36,11 +41,11 @@ export function Finances() {
 
   // CÁLCULOS DOS CARDS
   const totalEntradas = transacoesMesAtual
-    .filter(t => t.type === "entrada")
+    .filter((t) => t.type === "entrada")
     .reduce((acc, t) => acc + t.amount, 0);
 
   const totalSaidas = transacoesMesAtual
-    .filter(t => t.type === "saida")
+    .filter((t) => t.type === "saida")
     .reduce((acc, t) => acc + Math.abs(t.amount), 0);
 
   const saldo = transacoesMesAtual.reduce((acc, t) => acc + t.amount, 0);
@@ -54,8 +59,8 @@ export function Finances() {
 
   // TABS
   const buttons = [
-    { id: 'transacoes', label: "Transações" },
-    { id: 'graficos', label: "Gráficos" },
+    { id: "transacoes", label: "Transações" },
+    { id: "graficos", label: "Gráficos" },
   ];
 
   const contents = {
@@ -65,9 +70,7 @@ export function Finances() {
         subtitle="Visualize e gerencie suas transações"
       >
         {transacoesMesAtual.length > 0 ? (
-          transacoesMesAtual.map((t) => (
-            <TransactionItem key={t.id} {...t} />
-          ))
+          transacoesMesAtual.map((t) => <TransactionItem key={t.id} {...t} />)
         ) : (
           <p>Nenhuma transação cadastrada neste mês</p>
         )}
@@ -78,7 +81,11 @@ export function Finances() {
         title="Lucro vs Prejuízo"
         subtitle="Comparativo de transações dos últimos meses"
       >
-        <TransactionList periodo={periodo} setPeriodo={setPeriodo} transactions={transactions} />
+        <TransactionList
+          periodo={periodo}
+          setPeriodo={setPeriodo}
+          transactions={transactions}
+        />
       </TabContent>
     ),
   };
@@ -87,12 +94,13 @@ export function Finances() {
     <Layout>
       <div className={styles.container}>
         <div className={styles.header}>
-          <Header
-            title="Financeiro"
-            subtitle="Controle suas finanças e fluxo de caixa"
-          />
-          <div>
-            <Button icon={<LuPlus />} text="Nova Transação" onClick={() => setShowModal(true)} />
+          <div className={styles.buttonNav}>
+            <button
+              className={"customButton"}
+              onClick={() => setShowModal(true)}
+            >
+              <LuPlus /> Nova Transação
+            </button>
 
             {showModal && (
               <TransactionModal
