@@ -62,6 +62,7 @@ export const apiRequest = async (method, url, data = {}, params = {}) => {
 // Clients
 export const getClients = () => apiRequest("GET", "/clients");
 
+
 // Finances (GET helpers)
 export const getFinancialByDay = () => {
   const today = new Date().toISOString().split("T")[0];

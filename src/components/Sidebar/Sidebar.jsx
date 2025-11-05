@@ -10,30 +10,21 @@ import {
   LogOut,
 } from "lucide-react";
 import styles from "./sidebar.module.css";
+import {useAuth} from "../../contexts/AuthContext"
 
 const menuItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
+  { title: "Dashboard", url: "/home", icon: LayoutDashboard },
   { title: "Clientes", url: "/clients", icon: Users },
   { title: "Fidelidade", url: "/rewards", icon: Gift },
   { title: "Financeiro", url: "/finances", icon: DollarSign },
   { title: "Mensagens", url: "/messages", icon: MessageSquare },
 ];
 
-// Dados mockados
-const mockUser = {
-  name: "Codifica Edu",
-  email: "codificaedu@maisprati.com",
-};
-
 export function Sidebar() {
-  const [user] = useState(mockUser);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth(); 
   const [activeUrl, setActiveUrl] = useState(location.pathname);
-
-  const handleLogout = () => {
-    alert("Logout clicado!");
-  };
 
   return (
     <aside className={styles.sidebar}>
@@ -79,7 +70,10 @@ export function Sidebar() {
           <p>{user.name}</p>
           <p className={styles.subtitle}>{user.email}</p>
         </div>
-        <button className={styles.logoutButton} onClick={handleLogout}>
+        <button className={styles.logoutButton} onClick={()=>
+          {logout()
+            navigate('/login')
+          }}>
           <LogOut />
           Sair
         </button>

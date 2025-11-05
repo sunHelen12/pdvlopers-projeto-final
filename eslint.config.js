@@ -26,4 +26,15 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
     },
   },
+  // Configuração para o Backend - Para as variáveis globais do Node.js
+  {
+    files: ['Server.js', 'src/controllers/**/*.js', 'src/routes/**/*.js', 'src/services/**/*.js'],
+    languageOptions: {
+        globals: globals.node, // Informa que o ambiente é Node.js
+        sourceType: 'module'
+    },
+    rules: {
+        'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+    }
+  }
 ])

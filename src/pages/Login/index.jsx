@@ -27,7 +27,7 @@ export default function Login() {
     const success = await login(email, senha);
 
     if (success) {
-      navigate("/dashboard");
+      navigate("/home");
     } else {
       setError("Usuário ou senha inválidos");
       toast({

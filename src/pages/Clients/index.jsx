@@ -1,6 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import styles from "./clients.module.css";
 import { Layout } from "../../components/Layout/Layout";
+import { getClients } from "../../services/api";
 
 export function Clients() {
   const [clientes, setClientes] = useState([]);
@@ -24,6 +25,24 @@ export function Clients() {
 
   const [paginaAtual, setPaginaAtual] = useState(1);
   const itensPorPagina = 11;
+
+useEffect(() => {
+  loadClientes();
+
+  
+}, []);
+
+console.log(clientes);
+  const loadClientes = async () => {
+  try {
+    const data = await getClients();
+        setClientes(data.items);
+  } catch (error) {
+    console.error("Erro ao carregar clientes:", error);
+  }
+};
+
+
 
   const resetForm = () => {
     setNome("");
