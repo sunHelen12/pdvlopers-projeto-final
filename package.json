@@ -1,7 +1,7 @@
 {
   "name": "pdvlopers-projeto-final",
   "version": "1.0.0",
-  "description": "Sistema Mercadinho - Full Stack Application",
+  "description": "Balcão",
   "main": "src/server.js",
   "private": true,
   "scripts": {

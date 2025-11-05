@@ -34,7 +34,7 @@ export function Sidebar() {
             <ShoppingCart />
           </div>
           <div>
-            <h2 className={styles.title}>Sistema PDV</h2>
+            <h2 className={styles.title}>Balcão</h2>
             <p className={styles.subtitle}>v1.0</p>
           </div>
         </div>

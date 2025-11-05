@@ -47,7 +47,7 @@ export default function Login() {
           <div className={styles.iconWrapper}>
             <ShoppingCart className={styles.icon} />
           </div>
-          <h2 className={styles.title}>Sistema PDV</h2>
+          <h2 className={styles.title}>Balcão</h2>
           <p className={styles.subtitle}>Faça login para acessar o sistema</p>
         </div>
 
