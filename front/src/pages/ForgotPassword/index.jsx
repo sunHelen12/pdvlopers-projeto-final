@@ -5,7 +5,7 @@ import api from "../../services/api";
 import Input from "../../components/Input";
 import Button from "../../components/Button";
 import { useToast } from "../../hooks/use-toast";
-import styles from "../Login/Login.module.css";
+import styles from "../Login/login.module.css";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
